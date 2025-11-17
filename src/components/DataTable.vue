@@ -72,6 +72,25 @@
                 type="date"
                 class="w-full rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
               />
+              <select
+                v-else-if="header === 'Статус'"
+                v-model="columnFilters[header]"
+                class="w-full rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+              >
+                <option value="">Все</option>
+                <option value="Заказано">Заказано</option>
+                <option value="Не заказано">Не заказано</option>
+                <option value="Отправлено">Отправлено</option>
+              </select>
+              <select
+                v-else-if="header === 'Тип'"
+                v-model="columnFilters[header]"
+                class="w-full rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+              >
+                <option value="">Все</option>
+                <option value="Доход">Доход</option>
+                <option value="Расход">Расход</option>
+              </select>
               <input
                 v-else
                 v-model="columnFilters[header]"
@@ -389,16 +408,16 @@ const formatDate = (date: string): string => {
 
 const getStatusClass = (status: string) => {
   const baseClass =
-    "inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ";
+    "inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ";
   switch (status) {
     case "active":
-    case "Активные":
+    case "Заказано":
       return baseClass + "bg-green-100 text-green-800";
     case "inactive":
-    case "Неактивные":
+    case "Не заказано":
       return baseClass + "bg-red-100 text-red-800";
     case "pending":
-    case "В ожидании":
+    case "Отправлено":
       return baseClass + "bg-yellow-100 text-yellow-800";
     default:
       return baseClass + "bg-gray-100 text-gray-800";

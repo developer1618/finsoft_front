@@ -34,6 +34,25 @@
                 type="date"
                 class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
               />
+              <select
+                v-else-if="header === 'Статус'"
+                v-model="formData[header]"
+                class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+              >
+                <option value="">Выберите статус</option>
+                <option value="Заказано">Заказано</option>
+                <option value="Не заказано">Не заказано</option>
+                <option value="Отправлено">Отправлено</option>
+              </select>
+              <select
+                v-else-if="header === 'Тип'"
+                v-model="formData[header]"
+                class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+              >
+                <option value="">Выберите тип</option>
+                <option value="Доход">Доход</option>
+                <option value="Расход">Расход</option>
+              </select>
               <input
                 v-else
                 v-model="formData[header]"
