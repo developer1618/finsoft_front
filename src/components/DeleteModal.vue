@@ -5,14 +5,10 @@
         v-if="isOpen"
         class="fixed inset-0 z-50 flex items-center justify-center"
       >
-        <!-- Фон -->
         <div class="absolute inset-0 bg-black/50" @click="close"></div>
-
-        <!-- Модальное окно -->
         <div
           class="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 z-10"
         >
-          <!-- Заголовок -->
           <div
             class="flex items-center justify-between border-b border-gray-200 px-6 py-4"
           >
@@ -22,7 +18,6 @@
             </button>
           </div>
 
-          <!-- Сообщение подтверждения -->
           <div class="px-6 py-6">
             <p class="text-gray-700 text-center">
               Вы уверены, что хотите удалить эту запись? Это действие невозможно
@@ -30,7 +25,6 @@
             </p>
           </div>
 
-          <!-- Кнопки действий -->
           <div
             class="flex gap-3 justify-end border-t border-gray-200 px-6 py-4"
           >

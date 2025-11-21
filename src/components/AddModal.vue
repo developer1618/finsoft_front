@@ -5,14 +5,10 @@
         v-if="isOpen"
         class="fixed inset-0 z-50 flex items-center justify-center"
       >
-        <!-- Фон -->
         <div class="absolute inset-0 bg-black/50" @click="close"></div>
-
-        <!-- Модальное окно -->
         <div
           class="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 z-10"
         >
-          <!-- Заголовок -->
           <div
             class="flex items-center justify-between border-b border-gray-200 px-6 py-4"
           >
@@ -21,48 +17,93 @@
               <XMarkIcon class="w-6 h-6" />
             </button>
           </div>
-
-          <!-- Содержимое формы -->
           <div class="px-6 py-4 space-y-4">
             <div v-for="header in headers" :key="header" class="space-y-1">
               <label class="block text-sm font-medium text-gray-700">
                 {{ header }}
               </label>
-              <input
+              <FlatPickr
                 v-if="header === 'Дата'"
                 v-model="formData[header]"
-                type="date"
-                class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                :config="datePickerConfig"
+                @input="(event: InputEvent) => handleDateMaskInput(event, header)"
+                placeholder="дд.мм.гггг"
+                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
               />
               <select
                 v-else-if="header === 'Статус'"
                 v-model="formData[header]"
-                class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
               >
-                <option value="">Выберите статус</option>
-                <option value="Заказано">Заказано</option>
-                <option value="Не заказано">Не заказано</option>
-                <option value="Отправлено">Отправлено</option>
+                <option value="Заказано в Китае">Заказано в Китае</option>
+                <option value="Принято в Душанбе">Принято в Душанбе</option>
               </select>
               <select
                 v-else-if="header === 'Тип'"
                 v-model="formData[header]"
-                class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
               >
-                <option value="">Выберите тип</option>
                 <option value="Доход">Доход</option>
                 <option value="Расход">Расход</option>
               </select>
+              <div v-else-if="header === 'Количество'" class="space-y-2">
+                <div class="flex gap-3">
+                  <input
+                    v-model="quantityValue"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Введите число"
+                    class="flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                  />
+                  <select
+                    v-model="quantityUnit"
+                    class="w-24 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                  >
+                    <option v-for="unit in quantityUnits" :key="unit" :value="unit">
+                      {{ unit }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <select
+                v-else-if="header === 'Расположение'"
+                v-model="formData[header]"
+                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+              >
+                <option v-for="option in warehouseLocations" :key="option" :value="option">
+                  {{ option }}
+                </option>
+              </select>
+              <div v-else-if="header === 'Сумма'" class="space-y-2">
+                <div class="flex gap-3">
+                  <input
+                    v-model="sumValue"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Введите сумму"
+                    class="flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                  />
+                  <select
+                    v-model="sumCurrency"
+                    class="w-24 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                  >
+                    <option v-for="currency in currencyOptions" :key="currency" :value="currency">
+                      {{ currency }}
+                    </option>
+                  </select>
+                </div>
+              </div>
               <input
                 v-else
                 v-model="formData[header]"
                 type="text"
-                class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                :placeholder="getPlaceholder(header)"
+                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
               />
             </div>
           </div>
-
-          <!-- Кнопки действий -->
           <div
             class="flex gap-3 justify-end border-t border-gray-200 px-6 py-4"
           >
@@ -94,6 +135,34 @@ export default {
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { XMarkIcon } from "@heroicons/vue/24/outline";
+import Flatpickr from "vue-flatpickr-component";
+import { Russian } from "flatpickr/dist/l10n/ru.js";
+import { applyDateMask, displayToIsoDate } from "../utils/dateFormat";
+
+const getPlaceholder = (header: string): string => {
+  const placeholders: Record<string, string> = {
+    'Код товара': 'Например: WH-001',
+    'Название товара': 'Введите название товара',
+    'Количество': 'Например: 100',
+    'Единица': 'Например: шт, кг, л',
+    'Расположение': 'Выберите расположение',
+    'Дата': 'Выберите дату',
+    'Статус': 'Выберите статус',
+    'Тип': 'Выберите тип',
+    'Поставщик': 'Введите название поставщика',
+    'Цена': 'Введите цену',
+    'Сумма': 'Введите сумму',
+    'Примечание': 'Введите примечание',
+  };
+  
+  return placeholders[header] || 'Введите значение';
+};
+
+const warehouseLocations = ["Склад Капсула", "Склад Стакан"];
+type QuantityUnit = "кг" | "шт";
+const quantityUnits: QuantityUnit[] = ["кг", "шт"];
+type CurrencyOption = "$" | "сом";
+const currencyOptions: CurrencyOption[] = ["сом", "$"];
 
 interface Props {
   isOpen: boolean;
@@ -108,24 +177,92 @@ const emit = defineEmits<{
   confirm: [data: Record<string, any>];
 }>();
 
+const FlatPickr = Flatpickr;
+const today = new Date();
+const datePickerConfig = {
+  dateFormat: "d.m.Y",
+  locale: Russian,
+  allowInput: true,
+  maxDate: today,
+};
+
 const formData = ref<Record<string, any>>({});
+const quantityValue = ref<string>("");
+const quantityUnit = ref<QuantityUnit>("шт");
+const sumValue = ref<string>("");
+const sumCurrency = ref<CurrencyOption>("сом");
+
+const resetForm = () => {
+  formData.value = {};
+  quantityValue.value = "";
+  quantityUnit.value = "шт";
+  sumValue.value = "";
+  sumCurrency.value = "сом";
+};
 
 watch(
   () => props.isOpen,
   (newVal) => {
     if (newVal) {
-      formData.value = {};
+      resetForm();
     }
   }
 );
+
+const syncQuantityField = () => {
+  if (quantityValue.value) {
+    formData.value["Количество"] = `${quantityValue.value} ${quantityUnit.value}`;
+  } else {
+    delete formData.value["Количество"];
+  }
+};
+
+watch([quantityValue, quantityUnit], syncQuantityField);
+
+const syncSumField = () => {
+  if (!sumValue.value) {
+    delete formData.value["Сумма"];
+    return;
+  }
+
+  formData.value["Сумма"] = sumCurrency.value === "$"
+    ? `$${sumValue.value}`
+    : `${sumValue.value} сом`;
+};
+
+watch([sumValue, sumCurrency], syncSumField);
+
+const convertFormDatesToIso = (data: Record<string, any>) => {
+  const payload = { ...data };
+  const dateValue = payload["Дата"];
+  if (typeof dateValue === "string") {
+    const isoValue = displayToIsoDate(dateValue);
+    if (isoValue) {
+      payload["Дата"] = isoValue;
+    }
+  }
+  return payload;
+};
+
+const handleDateMaskInput = (event: Event, header: string) => {
+  const target = event.target as HTMLInputElement | null;
+  if (!target) {
+    return;
+  }
+
+  const maskedValue = applyDateMask(target.value);
+  target.value = maskedValue;
+  formData.value[header] = maskedValue;
+};
 
 const close = () => {
   emit("close");
 };
 
 const confirm = () => {
-  emit("confirm", formData.value);
-  formData.value = {};
+  const payload = convertFormDatesToIso(formData.value);
+  emit("confirm", payload);
+  resetForm();
 };
 
 defineExpose({ close, confirm });

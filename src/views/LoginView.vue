@@ -1,39 +1,68 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { useRouter } from "vue-router";
+import logoUrl from "../assets/finsoft-logo.svg";
+import { login, type LoginResult } from "../stores/auth";
 
 const router = useRouter();
 
-const handleLogin = () => {
-  router.push("/admin");
+const email = ref("admin");
+const password = ref("admin");
+const isSubmitting = ref(false);
+const errorMessage = ref<string | null>(null);
+
+const handleLogin = async () => {
+  if (isSubmitting.value) {
+    return;
+  }
+  errorMessage.value = null;
+  isSubmitting.value = true;
+
+  const result: LoginResult = await login(email.value, password.value);
+  isSubmitting.value = false;
+
+  if (!result.success || !result.user) {
+    errorMessage.value = result.message ?? "Не удалось войти";
+    return;
+  }
+
+  const redirect = result.user.role === "manager" ? "/manager" : "/admin";
+  router.push(redirect);
 };
 </script>
 
 <template>
   <div
-    class="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8"
+    class="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-12 sm:px-6 lg:px-8"
   >
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+      <img
+        :src="logoUrl"
+        alt="FinSoft"
+        class="mx-auto h-16 w-auto"
+      />
       <h2
-        class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-blue-900"
+        class="mt-4text-center text-2xl/9 font-bold tracking-tight text-blue-900"
       >
-        FinSoft - Автоматизация бизнеса
+        Автоматизация бизнеса
       </h2>
     </div>
 
     <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
       <div class="bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12">
-        <form class="space-y-6" action="#" method="POST">
+        <form class="space-y-6" @submit.prevent="handleLogin">
           <div>
-            <label for="email" class="block text-sm/6 font-medium text-gray-900"
+            <label for="login" class="block text-sm/6 font-medium text-gray-900"
               >Логин</label
             >
             <div class="mt-2">
               <input
-                type="email"
-                name="email"
-                id="email"
-                autocomplete="email"
-                required=""
+                v-model="email"
+                type="text"
+                name="login"
+                id="login"
+                autocomplete="username"
+                required
                 placeholder="Введите ваш логин"
                 class="block w-full items-center w-full h-12 rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
               />
@@ -48,11 +77,12 @@ const handleLogin = () => {
             >
             <div class="mt-2">
               <input
+                v-model="password"
                 type="password"
                 name="password"
                 id="password"
                 autocomplete="current-password"
-                required=""
+                required
                 placeholder="Введите ваш пароль"
                 class="block w-full items-center w-full h-12 rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
               />
@@ -105,13 +135,17 @@ const handleLogin = () => {
             </div>
           </div>
 
+          <p v-if="errorMessage" class="text-sm text-rose-600">
+            {{ errorMessage }}
+          </p>
+
           <div>
             <button
-              type="button"
-              @click="handleLogin"
-              class="flex items-center w-full h-12 justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              type="submit"
+              :disabled="isSubmitting"
+              class="flex items-center w-full h-12 justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-60"
             >
-              Войти
+              {{ isSubmitting ? "Выполняется вход..." : "Войти" }}
             </button>
           </div>
         </form>
@@ -119,4 +153,3 @@ const handleLogin = () => {
     </div>
   </div>
 </template>
-<script setup lang="ts"></script>
