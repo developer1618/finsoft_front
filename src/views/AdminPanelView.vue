@@ -7,11 +7,7 @@
         class="flex grow flex-col gap-y-5 overflow-y-auto bg-black/10 px-6 pb-4"
       >
         <div class="flex h-16 shrink-0 items-center justify-center mt-8 mb-8">
-          <img
-            :src="logoUrl"
-            alt="FinSoft"
-            class="h-16 w-auto"
-          />
+          <img :src="finsoftLogo" alt="FinSoft" class="h-16 w-auto" />
         </div>
         <nav class="flex flex-1 flex-col">
           <ul role="list" class="flex flex-1 flex-col gap-y-7">
@@ -71,6 +67,9 @@
 
         <div class="h-6 w-px bg-gray-900/10 lg:hidden" aria-hidden="true"></div>
 
+        <!-- FinSoft Logo -->
+        <img :src="logoUrl" alt="FinSoft" class="h-8 w-auto lg:hidden" />
+
         <div
           class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 items-center justify-end"
         >
@@ -86,14 +85,14 @@
                 <span class="sr-only">Открыть меню пользователя</span>
                 <img
                   class="size-8 rounded-full bg-gray-50 outline -outline-offset-1 outline-black/5"
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  alt=""
+                  :src="logoUrl"
+                  alt="Исохон Раҷабов"
                 />
                 <span class="hidden lg:flex lg:items-center">
                   <span
                     class="ml-4 text-sm/6 font-semibold text-gray-900"
                     aria-hidden="true"
-                    >Имя Фамилия</span
+                    >Исохон Раҷабов</span
                   >
                   <ChevronDownIcon
                     class="ml-2 size-5 text-gray-400"
@@ -119,7 +118,9 @@
                   >
                     <button
                       type="button"
-                      @click="item.action ? item.action() : router.push(item.href)"
+                      @click="
+                        item.action ? item.action() : router.push(item.href)
+                      "
                       :class="[
                         active ? 'bg-gray-50 outline-hidden' : '',
                         'block w-full text-left px-3 py-1 text-sm/6 text-gray-900',
@@ -192,8 +193,12 @@
                 >
                   <div class="flex items-center justify-between">
                     <div>
-                      <p class="text-lg font-medium text-gray-600">Расход Варзоб</p>
-                      <p class="text-2xl font-bold text-rose-600 mt-2">72 000 TJS</p>
+                      <p class="text-lg font-medium text-gray-600">
+                        Расход Варзоб
+                      </p>
+                      <p class="text-2xl font-bold text-rose-600 mt-2">
+                        72 000 TJS
+                      </p>
                     </div>
                     <div class="text-4xl">🧾</div>
                   </div>
@@ -206,8 +211,12 @@
                 >
                   <div class="flex items-center justify-between">
                     <div>
-                      <p class="text-lg font-medium text-gray-600">Цех капсулы</p>
-                      <p class="text-2xl font-bold text-blue-600 mt-2">856 шт</p>
+                      <p class="text-lg font-medium text-gray-600">
+                        Цех капсулы
+                      </p>
+                      <p class="text-2xl font-bold text-blue-600 mt-2">
+                        856 шт
+                      </p>
                     </div>
                     <div class="text-4xl">⚙️</div>
                   </div>
@@ -220,7 +229,9 @@
                 >
                   <div class="flex items-center justify-between">
                     <div>
-                      <p class="text-lg font-medium text-gray-600">Цех стакана</p>
+                      <p class="text-lg font-medium text-gray-600">
+                        Цех стакана
+                      </p>
                       <p class="text-2xl font-bold text-purple-600 mt-2">
                         1,234 шт
                       </p>
@@ -252,7 +263,9 @@
                 >
                   <div class="flex items-center justify-between">
                     <div>
-                      <p class="text-lg font-medium text-slate-700">Склад завод</p>
+                      <p class="text-lg font-medium text-slate-700">
+                        Склад завод
+                      </p>
                       <p class="text-2xl font-bold text-slate-900 mt-2">
                         12 тонн сырья
                       </p>
@@ -290,7 +303,8 @@ import {
   HomeIcon,
   TruckIcon,
 } from "@heroicons/vue/24/outline";
-import logoUrl from "../assets/finsoft-logo.svg";
+import logoUrl from "../assets/iso.jpeg";
+import finsoftLogo from "../assets/finsoft-logo.svg";
 import { ChevronDownIcon } from "@heroicons/vue/20/solid";
 import { useAuth } from "../stores/auth";
 

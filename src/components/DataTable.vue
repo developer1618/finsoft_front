@@ -1,12 +1,46 @@
 <template>
   <div class="space-y-6">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div
+      class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+    >
       <div>
         <h2 class="text-base/7 font-semibold text-gray-900">{{ title }}</h2>
         <p class="mt-1 text-sm/6 text-gray-600">{{ description }}</p>
       </div>
       <div class="flex items-center gap-3">
+        <div v-if="isManagerView" class="flex items-center gap-2">
+          <select
+            v-model="periodFilter"
+            class="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+          >
+            <option value="all">Все данные</option>
+            <option value="today">За сегодня</option>
+            <option value="week">Эта неделя</option>
+            <option value="month">Этот месяц</option>
+            <option value="year">Этот год</option>
+            <option value="yearSelect">Выбрать год</option>
+          </select>
+          <select
+            v-if="periodFilter === 'yearSelect'"
+            v-model="selectedYear"
+            class="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+          >
+            <option v-for="year in availableYears" :key="year" :value="year">
+              {{ year }}
+            </option>
+          </select>
+          <div
+            class="bg-linear-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg px-4 py-2.5 flex items-center gap-2 shadow-sm"
+          >
+            <div class="flex flex-col gap-0.5">
+              <span class="font-bold text-indigo-900 text-base"> Итог: {{
+                filteredSummary
+              }}</span>
+            </div>
+          </div>
+        </div>
         <button
+          v-else
           @click="exportToWord"
           class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
         >
@@ -50,7 +84,7 @@
                 v-if="header === 'Дата'"
                 :model-value="columnFilters[header] || ''"
                 @update:model-value="(value) => updateDateFilter(header, value)"
-                @input="(event: InputEvent) => handleDateFilterMask(event, header)"
+                @input="handleDateFilterMask"
                 :config="dateFilterConfig"
                 placeholder="дд.мм.гггг"
                 class="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
@@ -79,7 +113,11 @@
                 class="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
               >
                 <option value="">Все</option>
-                <option v-for="option in warehouseLocations" :key="option" :value="option">
+                <option
+                  v-for="option in warehouseLocations"
+                  :key="option"
+                  :value="option"
+                >
                   {{ option }}
                 </option>
               </select>
@@ -261,6 +299,7 @@ interface Props {
   headers: string[];
   data: Record<string, any>[];
   canManage?: boolean;
+  isManagerView?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -295,6 +334,112 @@ const warehouseLocations = ["Склад Капсула", "Склад Стака�
 // Инициализация фильтров для каждого столбца
 props.headers.forEach((header) => {
   columnFilters.value[header] = "";
+});
+
+// Фильтр периодов для менеджера
+const periodFilter = ref("all");
+const customStartDate = ref("");
+const customEndDate = ref("");
+
+// Годы для выбора (от 2020 до текущего года)
+const currentYear = new Date().getFullYear();
+const availableYears = computed(() => {
+  const years = [];
+  for (let year = 2020; year <= currentYear; year++) {
+    years.push(year);
+  }
+  return years.reverse(); // в обратном порядке (от новых к старым)
+});
+const selectedYear = ref(currentYear);
+
+const getDateRange = () => {
+  const now = new Date();
+  let startDate = new Date(now.getFullYear(), 0, 1); // начало года
+  let endDate = new Date(now.getFullYear(), 11, 31); // конец года
+
+  if (periodFilter.value === "today") {
+    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    startDate.setHours(0, 0, 0, 0);
+    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    endDate.setHours(23, 59, 59, 999);
+  } else if (periodFilter.value === "week") {
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    startDate = new Date(now.setDate(diff));
+    startDate.setHours(0, 0, 0, 0);
+    endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 6);
+  } else if (periodFilter.value === "month") {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  } else if (periodFilter.value === "year") {
+    startDate = new Date(now.getFullYear(), 0, 1);
+    endDate = new Date(now.getFullYear(), 11, 31);
+  } else if (periodFilter.value === "yearSelect") {
+    const year = selectedYear.value;
+    startDate = new Date(year, 0, 1);
+    endDate = new Date(year, 11, 31);
+  } else if (periodFilter.value === "custom") {
+    if (customStartDate.value) {
+      startDate = new Date(customStartDate.value);
+    }
+    if (customEndDate.value) {
+      endDate = new Date(customEndDate.value);
+    }
+  }
+
+  return { startDate, endDate };
+};
+
+const filteredSummary = computed(() => {
+  if (!props.isManagerView) {
+    return "";
+  }
+
+  const { startDate, endDate } = getDateRange();
+
+  // Объект для хранения сумм по единицам измерения
+  const totals: Record<string, number> = {};
+  const unitOrder: string[] = []; // для сохранения порядка появления единиц
+
+  filteredData.value.forEach((row) => {
+    const dateStr = row["Дата"];
+    if (dateStr) {
+      const rowDate = new Date(dateStr);
+      if (rowDate >= startDate && rowDate <= endDate) {
+        const summaStr = row["Сумма"] || row["Количество"];
+        if (summaStr) {
+          // Извлекаем число и единицу измерения
+          const fullStr = summaStr.toString();
+          const numMatch = fullStr.match(/[\d,.-]+/);
+          const num = numMatch ? parseFloat(numMatch[0].replace(",", ".")) : 0;
+
+          // Извлекаем единицу измерения (всё после цифр)
+          const unitMatch = fullStr.match(/[^\d,.\-\s]+/);
+          const unit = unitMatch ? unitMatch[0].trim() : "";
+
+          if (!isNaN(num)) {
+            if (!totals[unit]) {
+              totals[unit] = 0;
+              unitOrder.push(unit);
+            }
+            totals[unit] += num;
+          }
+        }
+      }
+    }
+  });
+
+  // Форматируем вывод: показываем все единицы последовательно
+  const result = unitOrder
+    .map((unit) => {
+      const total = totals[unit] ?? 0;
+      const formatted = total.toLocaleString("ru-RU");
+      return unit ? `${formatted} ${unit}` : formatted;
+    })
+    .join(", ");
+
+  return result || "0";
 });
 
 const formatDatePickerValue = (
@@ -370,7 +515,9 @@ const filteredData = computed(() => {
       } else {
         const query = filterValue.toLowerCase();
         result = result.filter((row) =>
-          String(row[header] ?? "").toLowerCase().includes(query)
+          String(row[header] ?? "")
+            .toLowerCase()
+            .includes(query)
         );
       }
     }
@@ -462,7 +609,10 @@ const exportToWord = () => {
   const rows = filteredData.value;
 
   const tableHeader = headers
-    .map((header) => `<th style="border:1px solid #d1d5db;padding:6px;text-align:left;">${header}</th>`)
+    .map(
+      (header) =>
+        `<th style="border:1px solid #d1d5db;padding:6px;text-align:left;">${header}</th>`
+    )
     .join("");
 
   const tableBody = rows
@@ -470,7 +620,9 @@ const exportToWord = () => {
       const cells = headers
         .map((header) => {
           const value = row[header] ?? "";
-          return `<td style="border:1px solid #e5e7eb;padding:6px;">${String(value)
+          return `<td style="border:1px solid #e5e7eb;padding:6px;">${String(
+            value
+          )
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")}</td>`;
@@ -496,9 +648,9 @@ const exportToWord = () => {
   const link = document.createElement("a");
   const fileSafeTitle = props.title.replace(/\s+/g, "_");
   link.href = url;
-  link.download = `${fileSafeTitle || "table"}_${new Date()
-    .toISOString()
-    .split("T")[0]}.doc`;
+  link.download = `${fileSafeTitle || "table"}_${
+    new Date().toISOString().split("T")[0]
+  }.doc`;
   link.click();
   URL.revokeObjectURL(url);
 };
