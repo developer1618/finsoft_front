@@ -35,8 +35,13 @@
                 class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
               >
                 <option value="" disabled :selected="!formData[header]" hidden>Выберите статус</option>
-                <option value="Заказано в Китае">Заказано в Китае</option>
-                <option value="Принято в Душанбе">Принято в Душанбе</option>
+                <option
+                  v-for="status in normalizedStatusOptions"
+                  :key="status"
+                  :value="status"
+                >
+                  {{ status }}
+                </option>
               </select>
               <select
                 v-else-if="header === 'Тип'"
@@ -135,7 +140,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import { XMarkIcon } from "@heroicons/vue/24/outline";
 import Flatpickr from "vue-flatpickr-component";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
@@ -171,11 +176,22 @@ interface Props {
   title: string;
   headers: string[];
   initialData?: Record<string, any>;
+  statusOptions?: string[];
 }
+
+const defaultStatusOptions = [
+  "Заказано в Китае",
+  "Принято в Душанбе",
+];
 
 const props = withDefaults(defineProps<Props>(), {
   initialData: () => ({}),
 });
+const normalizedStatusOptions = computed(() =>
+  props.statusOptions && props.statusOptions.length
+    ? props.statusOptions
+    : defaultStatusOptions
+);
 
 const emit = defineEmits<{
   close: [];

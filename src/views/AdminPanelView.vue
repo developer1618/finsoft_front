@@ -86,13 +86,13 @@
                 <img
                   class="size-8 rounded-full bg-gray-50 outline -outline-offset-1 outline-black/5"
                   :src="logoUrl"
-                  alt="Исохон Раҷабов"
+                  alt="Имя Фамилия"
                 />
                 <span class="hidden lg:flex lg:items-center">
                   <span
                     class="ml-4 text-sm/6 font-semibold text-gray-900"
                     aria-hidden="true"
-                    >Исохон Раҷабов</span
+                    >Имя Фамилия</span
                   >
                   <ChevronDownIcon
                     class="ml-2 size-5 text-gray-400"
@@ -164,7 +164,9 @@
                         $45,250 / $28,750
                       </p>
                     </div>
-                    <div class="text-4xl">💵</div>
+                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                      <BanknotesIcon class="h-8 w-8 text-green-600" />
+                    </div>
                   </div>
                 </div>
 
@@ -182,7 +184,9 @@
                         1,248 кг
                       </p>
                     </div>
-                    <div class="text-4xl">📦</div>
+                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                      <TruckIcon class="h-8 w-8 text-orange-600" />
+                    </div>
                   </div>
                 </div>
 
@@ -200,7 +204,9 @@
                         72 000 TJS
                       </p>
                     </div>
-                    <div class="text-4xl">🧾</div>
+                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                      <ArrowTrendingDownIcon class="h-8 w-8 text-rose-600" />
+                    </div>
                   </div>
                 </div>
 
@@ -218,7 +224,9 @@
                         856 шт
                       </p>
                     </div>
-                    <div class="text-4xl">⚙️</div>
+                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                      <CubeIcon class="h-8 w-8 text-blue-600" />
+                    </div>
                   </div>
                 </div>
 
@@ -236,7 +244,9 @@
                         1,234 шт
                       </p>
                     </div>
-                    <div class="text-4xl">🥤</div>
+                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                      <ArchiveBoxIcon class="h-8 w-8 text-purple-600" />
+                    </div>
                   </div>
                 </div>
 
@@ -252,25 +262,47 @@
                         320 позиций
                       </p>
                     </div>
-                    <div class="text-4xl">📊</div>
+                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                      <BuildingStorefrontIcon class="h-8 w-8 text-teal-600" />
+                    </div>
                   </div>
                 </div>
 
                 <div
                   v-if="isSectionVisible('factory-warehouse')"
                   @click="router.push('/admin/factory-warehouse')"
-                  class="bg-linear-to-br from-slate-200 to-slate-50 rounded-lg shadow-md p-6 border-l-4 border-slate-400 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  class="bg-linear-to-br from-cyan-50 via-sky-50 to-cyan-100 rounded-lg shadow-md p-6 border-l-4 border-cyan-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   <div class="flex items-center justify-between">
                     <div>
-                      <p class="text-lg font-medium text-slate-700">
+                      <p class="text-lg font-medium text-cyan-900">
                         Склад завод
                       </p>
-                      <p class="text-2xl font-bold text-slate-900 mt-2">
+                      <p class="text-2xl font-bold text-cyan-700 mt-2">
                         12 тонн сырья
                       </p>
                     </div>
-                    <div class="text-4xl">🏭</div>
+                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                      <BuildingOffice2Icon class="h-8 w-8 text-cyan-600" />
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  v-if="isSectionVisible('debts')"
+                  @click="router.push('/admin/debts')"
+                  class="bg-linear-to-br from-rose-50 to-rose-100 rounded-lg shadow-md p-6 border-l-4 border-rose-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-lg font-medium text-gray-700">Долги</p>
+                      <p class="text-2xl font-bold text-rose-600 mt-2">
+                        95 000 сом / 16 000 $
+                      </p>
+                    </div>
+                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                      <DocumentCurrencyDollarIcon class="h-8 w-8 text-rose-600" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -296,14 +328,15 @@ import {
   ArrowTrendingDownIcon,
   BanknotesIcon,
   Bars3Icon,
-  BeakerIcon,
   BuildingOffice2Icon,
+  BuildingStorefrontIcon,
   Cog6ToothIcon,
   CubeIcon,
+  DocumentCurrencyDollarIcon,
   HomeIcon,
   TruckIcon,
 } from "@heroicons/vue/24/outline";
-import logoUrl from "../assets/iso.jpeg";
+import logoUrl from "../assets/finsoft-logo.svg";
 import finsoftLogo from "../assets/finsoft-logo.svg";
 import { ChevronDownIcon } from "@heroicons/vue/20/solid";
 import { useAuth } from "../stores/auth";
@@ -352,19 +385,25 @@ const navigationBase: NavItem[] = [
     id: "cup-workshop",
     name: "Цех стакана",
     href: "/admin/cup-workshop",
-    icon: BeakerIcon,
+    icon: ArchiveBoxIcon,
   },
   {
     id: "warehouse",
     name: "Склад цех",
     href: "/admin/warehouse",
-    icon: ArchiveBoxIcon,
+    icon: BuildingStorefrontIcon,
   },
   {
     id: "factory-warehouse",
     name: "Склад завод",
     href: "/admin/factory-warehouse",
     icon: BuildingOffice2Icon,
+  },
+  {
+    id: "debts",
+    name: "Долги",
+    href: "/admin/debts",
+    icon: DocumentCurrencyDollarIcon,
   },
 ];
 
@@ -377,6 +416,7 @@ const visibilityIds = [
   "cup-workshop",
   "warehouse",
   "factory-warehouse",
+  "debts",
 ];
 
 const defaultVisibility = visibilityIds.reduce<Record<string, boolean>>(

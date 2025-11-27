@@ -12,6 +12,7 @@ import ReportsPanel from "../views/ReportsPanelView.vue";
 import Settings from "../views/SettingsView.vue";
 import Warehouse from "../views/WarehouseView.vue";
 import FactoryWarehouse from "../views/FactoryWarehouseView.vue";
+import Debts from "../views/DebtsView.vue";
 import { getCurrentRole, type UserRole } from "../stores/auth";
 
 declare module "vue-router" {
@@ -82,6 +83,12 @@ const createSectionRoutes = (
     path: "factory-warehouse",
     name: `${namePrefix}FactoryWarehouse`,
     component: FactoryWarehouse,
+    meta: { roles },
+  },
+  {
+    path: "debts",
+    name: `${namePrefix}Debts`,
+    component: Debts,
     meta: { roles },
   },
 ];

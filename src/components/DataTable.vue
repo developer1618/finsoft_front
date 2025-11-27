@@ -95,8 +95,13 @@
                 class="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
               >
                 <option value="">Все</option>
-                <option value="Заказано в Китае">Заказано в Китае</option>
-                <option value="Принято в Душанбе">Принято в Душанбе</option>
+                <option
+                  v-for="status in normalizedStatusOptions"
+                  :key="status"
+                  :value="status"
+                >
+                  {{ status }}
+                </option>
               </select>
               <select
                 v-else-if="header === 'Тип'"
@@ -251,10 +256,11 @@
   </div>
 
   <template v-if="canManage">
-    <AddModal
+        <AddModal
       :isOpen="showAddModal"
       title="Добавить новую запись"
       :headers="headers"
+      :status-options="normalizedStatusOptions"
       @close="showAddModal = false"
       @confirm="handleAddConfirm"
     />
@@ -264,6 +270,7 @@
       title="Редактировать запись"
       :headers="headers"
       :initialData="selectedRow || {}"
+      :status-options="normalizedStatusOptions"
       @close="showEditModal = false"
       @confirm="handleEditConfirm"
     />
@@ -300,7 +307,13 @@ interface Props {
   data: Record<string, any>[];
   canManage?: boolean;
   isManagerView?: boolean;
+  statusOptions?: string[];
 }
+
+const defaultStatusOptions = [
+  "Заказано в Китае",
+  "Принято в Душанбе",
+];
 
 const props = withDefaults(defineProps<Props>(), {
   canManage: true,
@@ -308,6 +321,11 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { isAdmin } = useAuth();
 const canManage = computed(() => Boolean(props.canManage && isAdmin.value));
+const normalizedStatusOptions = computed(() =>
+  props.statusOptions && props.statusOptions.length
+    ? props.statusOptions
+    : defaultStatusOptions
+);
 
 const emit = defineEmits<{
   add: [data: Record<string, any>];
@@ -662,13 +680,14 @@ const formatDate = (date: string): string => {
 const getStatusClass = (status: string) => {
   const baseClass =
     "inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ";
-  switch (status) {
-    case "Принято в Душанбе":
-      return baseClass + "bg-green-100 text-green-800";
-    case "Заказано в Китае":
-      return baseClass + "bg-yellow-100 text-yellow-800";
-    default:
-      return baseClass + "bg-gray-100 text-gray-800";
-  }
+  const statusColors: Record<string, string> = {
+    "Неоплачено": "bg-rose-100 text-rose-800",
+    "Частично оплачено": "bg-amber-100 text-amber-800",
+    "Оплачено": "bg-emerald-100 text-emerald-800",
+    "Принято в Душанбе": "bg-green-100 text-green-800",
+    "Заказано в Китае": "bg-yellow-100 text-yellow-800",
+  };
+
+  return baseClass + (statusColors[status] ?? "bg-gray-100 text-gray-800");
 };
 </script>

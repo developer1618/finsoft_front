@@ -41,18 +41,26 @@
               v-for="card in cards"
               :key="card.id"
               :to="card.route"
-              class="flex items-center justify-between rounded-2xl border border-gray-100 bg-gradient-to-r from-white to-slate-50 px-4 py-4 shadow-xs transition hover:-translate-y-0.5 hover:border-indigo-100"
+              :class="[
+                'flex items-center justify-between rounded-2xl border-l-4 px-4 py-4 shadow-md transition hover:shadow-lg hover:scale-[1.02] bg-linear-to-br',
+                card.bgClass,
+                card.borderClass,
+              ]"
             >
               <div>
-                <p class="text-sm text-gray-500">{{ card.title }}</p>
-                <p class="mt-1 text-2xl font-semibold text-gray-900">
+                <p class="text-sm font-medium text-gray-600">
+                  {{ card.title }}
+                </p>
+                <p :class="['mt-2 text-2xl font-semibold', card.valueClass]">
                   {{ card.value }}
                 </p>
-                <p class="mt-1 text-xs text-gray-400">
-                  Нажмите, чтобы открыть таблицу
+                <p class="mt-1 text-xs text-gray-500">
+                  {{ card.subtitle }}
                 </p>
               </div>
-              <div class="text-4xl">{{ card.icon }}</div>
+              <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                <component :is="card.icon" class="h-8 w-8" :class="card.iconClass" />
+              </div>
             </RouterLink>
           </div>
         </section>
@@ -68,6 +76,16 @@ import { computed } from "vue";
 import { RouterLink, useRouter, useRoute } from "vue-router";
 import { useAuth } from "../stores/auth";
 import logoUrl from "../assets/amir.jpeg";
+import {
+  ArchiveBoxIcon,
+  ArrowTrendingDownIcon,
+  BanknotesIcon,
+  BuildingOffice2Icon,
+  BuildingStorefrontIcon,
+  CubeIcon,
+  DocumentCurrencyDollarIcon,
+  TruckIcon,
+} from "@heroicons/vue/24/outline";
 
 const router = useRouter();
 const route = useRoute();
@@ -85,50 +103,97 @@ const cards = [
     id: "income-expense",
     title: "Доход / Расход",
     value: "$45,250 / $28,750",
-    icon: "💵",
+    subtitle: "Финансовый отчёт",
+    icon: BanknotesIcon,
+    iconClass: "text-green-600",
     route: "/manager/income-expense",
-  },
-  {
-    id: "chinese-cargo",
-    title: "Китайские грузы",
-    value: "1,248 кг",
-    icon: "📦",
-    route: "/manager/chinese-cargo",
+    bgClass: "from-green-50 to-green-100",
+    borderClass: "border-green-500",
+    valueClass: "text-green-600",
   },
   {
     id: "varzob-expense",
     title: "Расход Варзоб",
     value: "72 000 TJS",
-    icon: "🧾",
+    subtitle: "Контроль затрат",
+    icon: ArrowTrendingDownIcon,
+    iconClass: "text-rose-600",
     route: "/manager/varzob-expense",
+    bgClass: "from-rose-50 to-rose-100",
+    borderClass: "border-rose-500",
+    valueClass: "text-rose-600",
+  },
+  {
+    id: "chinese-cargo",
+    title: "Китайские грузы",
+    value: "1,248 кг",
+    subtitle: "Статусы поставок",
+    icon: TruckIcon,
+    iconClass: "text-orange-600",
+    route: "/manager/chinese-cargo",
+    bgClass: "from-orange-50 to-orange-100",
+    borderClass: "border-orange-500",
+    valueClass: "text-orange-600",
   },
   {
     id: "capsule-workshop",
     title: "Цех капсулы",
     value: "856 шт",
-    icon: "⚙️",
+    subtitle: "Производство капсул",
+    icon: CubeIcon,
+    iconClass: "text-blue-600",
     route: "/manager/capsule-workshop",
+    bgClass: "from-blue-50 to-blue-100",
+    borderClass: "border-blue-500",
+    valueClass: "text-blue-600",
   },
   {
     id: "cup-workshop",
     title: "Цех стакана",
     value: "1,234 шт",
-    icon: "🥤",
+    subtitle: "Выпуск стаканов",
+    icon: ArchiveBoxIcon,
+    iconClass: "text-purple-600",
     route: "/manager/cup-workshop",
+    bgClass: "from-purple-50 to-purple-100",
+    borderClass: "border-purple-500",
+    valueClass: "text-purple-600",
   },
   {
     id: "warehouse",
     title: "Склад цех",
     value: "320 позиций",
-    icon: "📊",
+    subtitle: "Остатки на складе",
+    icon: BuildingStorefrontIcon,
+    iconClass: "text-teal-600",
     route: "/manager/warehouse",
+    bgClass: "from-teal-50 to-teal-100",
+    borderClass: "border-teal-500",
+    valueClass: "text-teal-600",
   },
   {
     id: "factory-warehouse",
     title: "Склад завод",
     value: "12 тонн",
-    icon: "🏭",
+    subtitle: "Запасы сырья",
+    icon: BuildingOffice2Icon,
+    iconClass: "text-cyan-600",
     route: "/manager/factory-warehouse",
+    bgClass: "from-cyan-50 via-sky-50 to-cyan-100",
+    borderClass: "border-cyan-500",
+    valueClass: "text-cyan-700",
+  },
+  {
+    id: "debts",
+    title: "Долги",
+    value: "95 000 сом / 16 000 $",
+    subtitle: "Управление задолженностями",
+    icon: DocumentCurrencyDollarIcon,
+    iconClass: "text-rose-600",
+    route: "/manager/debts",
+    bgClass: "from-rose-50 to-rose-100",
+    borderClass: "border-rose-500",
+    valueClass: "text-rose-600",
   },
 ];
 </script>

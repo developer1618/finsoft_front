@@ -107,6 +107,11 @@ const menuOptions: MenuOption[] = [
     name: "Склад завод",
     description: "Запасы на основном складе",
   },
+  {
+    id: "debts",
+    name: "Долги",
+    description: "Управление задолженностями клиентов",
+  },
 ];
 
 const defaultVisibility = menuOptions.reduce<Record<string, boolean>>(

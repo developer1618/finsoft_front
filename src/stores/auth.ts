@@ -59,8 +59,8 @@ const credentialMatrix: Array<{
     email: "admin",
     password: "admin",
     role: "admin",
-    firstName: "Исохон",
-    lastName: "Раҷабов",
+    firstName: "Имя",
+    lastName: "Фамилия",
     avatar:
       "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=facearea&w=256&h=256&q=80",
   },
