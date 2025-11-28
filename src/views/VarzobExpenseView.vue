@@ -69,6 +69,8 @@ const tableData = ref([
   },
 ]);
 
+const isManagerView = computed(() => getCurrentRole() === "manager");
+
 const handleAdd = () => {
   alert("Добавление новой записи расхода Варзоб пока недоступно");
 };

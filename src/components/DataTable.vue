@@ -169,6 +169,13 @@
             <td v-if="canManage" class="px-6 py-4 text-sm">
               <div class="flex gap-3">
                 <button
+                  @click="openPartialPayment(row)"
+                  class="text-amber-600 hover:text-amber-900 hover:bg-amber-50 p-1.5 rounded transition-colors"
+                  title="Частичная оплата"
+                >
+                  <BanknotesIcon class="w-4 h-4" />
+                </button>
+                <button
                   @click="openEditModal(row)"
                   class="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 p-1.5 rounded transition-colors"
                   title="Редактировать"
@@ -256,7 +263,7 @@
   </div>
 
   <template v-if="canManage">
-        <AddModal
+    <AddModal
       :isOpen="showAddModal"
       title="Добавить новую запись"
       :headers="headers"
@@ -286,7 +293,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { PencilSquareIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import {
+  BanknotesIcon,
+  PencilSquareIcon,
+  TrashIcon,
+} from "@heroicons/vue/24/outline";
 import Flatpickr from "vue-flatpickr-component";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
 import {
@@ -331,6 +342,7 @@ const emit = defineEmits<{
   add: [data: Record<string, any>];
   edit: [data: Record<string, any>];
   delete: [data: Record<string, any>];
+  "partial-payment": [data: Record<string, any>];
 }>();
 
 const FlatPickr = Flatpickr;
@@ -573,6 +585,13 @@ const openEditModal = (row: Record<string, any>) => {
   }
   selectedRow.value = row;
   showEditModal.value = true;
+};
+
+const openPartialPayment = (row: Record<string, any>) => {
+  if (!canManage.value) {
+    return;
+  }
+  emit("partial-payment", row);
 };
 
 const openDeleteModal = (row: Record<string, any>) => {
