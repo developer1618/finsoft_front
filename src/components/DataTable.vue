@@ -148,7 +148,11 @@
           <tr
             v-for="(row, idx) in paginatedData"
             :key="idx"
-            class="hover:bg-gray-50"
+            :class="[
+              'hover:bg-gray-50',
+              rowClickable ? 'cursor-pointer transition-colors' : ''
+            ]"
+            @click="handleRowClick(row)"
           >
             <td
               v-for="(header, headerIdx) in headers"
@@ -167,27 +171,28 @@
               <span v-else>{{ row[header] }}</span>
             </td>
             <td v-if="canManage" class="px-6 py-4 text-sm">
-              <div class="flex gap-3">
+              <div class="flex gap-3 items-center">
                 <button
-                  @click="openPartialPayment(row)"
+                  v-if="partialPaymentEnabled"
+                  @click.stop="openPartialPayment(row)"
                   class="text-amber-600 hover:text-amber-900 hover:bg-amber-50 p-1.5 rounded transition-colors"
                   title="Частичная оплата"
                 >
-                  <BanknotesIcon class="w-4 h-4" />
+                  <BanknotesIcon class="w-5 h-5" />
                 </button>
                 <button
-                  @click="openEditModal(row)"
+                  @click.stop="openEditModal(row)"
                   class="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 p-1.5 rounded transition-colors"
                   title="Редактировать"
                 >
-                  <PencilSquareIcon class="w-4 h-4" />
+                  <PencilSquareIcon class="w-5 h-5" />
                 </button>
                 <button
-                  @click="openDeleteModal(row)"
+                  @click.stop="openDeleteModal(row)"
                   class="text-red-600 hover:text-red-900 hover:bg-red-50 p-1.5 rounded transition-colors"
                   title="Удалить"
                 >
-                  <TrashIcon class="w-4 h-4" />
+                  <TrashIcon class="w-5 h-5" />
                 </button>
               </div>
             </td>
@@ -210,7 +215,7 @@
           title="Предыдущая страница"
         >
           <svg
-            class="w-4 h-4"
+            class="w-5 h-5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -245,7 +250,7 @@
           title="Следующая страница"
         >
           <svg
-            class="w-4 h-4"
+            class="w-6 h-6"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -319,6 +324,8 @@ interface Props {
   canManage?: boolean;
   isManagerView?: boolean;
   statusOptions?: string[];
+  partialPaymentEnabled?: boolean;
+  rowClickable?: boolean;
 }
 
 const defaultStatusOptions = [
@@ -328,6 +335,8 @@ const defaultStatusOptions = [
 
 const props = withDefaults(defineProps<Props>(), {
   canManage: true,
+  partialPaymentEnabled: false,
+  rowClickable: false,
 });
 
 const { isAdmin } = useAuth();
@@ -337,12 +346,15 @@ const normalizedStatusOptions = computed(() =>
     ? props.statusOptions
     : defaultStatusOptions
 );
+const partialPaymentEnabled = computed(() => Boolean(props.partialPaymentEnabled));
+const rowClickable = computed(() => Boolean(props.rowClickable));
 
 const emit = defineEmits<{
   add: [data: Record<string, any>];
   edit: [data: Record<string, any>];
   delete: [data: Record<string, any>];
   "partial-payment": [data: Record<string, any>];
+  "row-click": [data: Record<string, any>];
 }>();
 
 const FlatPickr = Flatpickr;
@@ -588,7 +600,7 @@ const openEditModal = (row: Record<string, any>) => {
 };
 
 const openPartialPayment = (row: Record<string, any>) => {
-  if (!canManage.value) {
+  if (!canManage.value || !partialPaymentEnabled.value) {
     return;
   }
   emit("partial-payment", row);
@@ -600,6 +612,13 @@ const openDeleteModal = (row: Record<string, any>) => {
   }
   selectedRow.value = row;
   showDeleteModal.value = true;
+};
+
+const handleRowClick = (row: Record<string, any>) => {
+  if (!rowClickable.value) {
+    return;
+  }
+  emit("row-click", row);
 };
 
 const handleAddConfirm = (formData: Record<string, any>) => {

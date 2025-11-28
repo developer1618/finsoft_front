@@ -6,10 +6,13 @@
     :data="tableData"
     :is-manager-view="isManagerView"
     :status-options="statusOptions"
+    :partial-payment-enabled="true"
+    :row-clickable="true"
     @add="handleAdd"
     @edit="handleEdit"
     @delete="handleDelete"
     @partial-payment="handlePartialPayment"
+    @row-click="openPaymentHistory"
   />
   <PartialPaymentModal
     :is-open="showPartialPayment"
@@ -21,15 +24,31 @@
     @close="closePartialPayment"
     @confirm="confirmPartialPayment"
   />
+  <PaymentHistoryModal
+    :is-open="showPaymentHistory"
+    :client-name="selectedDebt?.client"
+    :total-amount="selectedDebt ? formatAmount(selectedDebt.total, selectedDebt.currency) : ''"
+    :remaining-amount="selectedDebt ? formatAmount(selectedDebt.remaining, selectedDebt.currency) : ''"
+    :payments="currentPayments"
+    @close="closePaymentHistory"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import DataTable from "../components/DataTable.vue";
 import PartialPaymentModal from "../components/PartialPaymentModal.vue";
+import PaymentHistoryModal from "../components/PaymentHistoryModal.vue";
 import { getCurrentRole } from "../stores/auth";
 
 const statusOptions = ["Неоплачено", "Частично оплачено", "Оплачено"];
+
+type PaymentEntry = {
+  date: string;
+  amount: number;
+  currency: string;
+  method: string;
+};
 
 type DebtRecord = {
   Дата: string;
@@ -46,11 +65,11 @@ type DebtRecord = {
 
 const parseAmount = (value: string): { amount: number; currency: string } => {
   const match = value.match(/([\d\s.,]+)/);
-  const currencyMatch = value.replace(match?.[0] ?? "", "").trim() || "TJS";
+  const currencyMatch = value.replace(match?.[0] ?? "", "").trim() || "сом";
   const amount = Number((match?.[0] ?? "0").replace(/\s/g, "").replace(",", "."));
   return {
     amount: Number.isNaN(amount) ? 0 : amount,
-    currency: currencyMatch || "TJS",
+    currency: currencyMatch || "сом",
   };
 };
 
@@ -63,40 +82,40 @@ const seedTableData = (): DebtRecord[] => {
       Дата: "2025-11-16",
       Клиент: "ООО 'ВостокТрейд'",
       Товар: "Линейка ПЭТ-тар",
-      Сумма: "75 000 TJS",
-      Остаток: "75 000 TJS",
+      Сумма: "75 000 сом",
+      Остаток: "75 000 сом",
       Статус: "Неоплачено",
     },
     {
       Дата: "2025-11-14",
       Клиент: "ИП Сайфутдинов",
       Товар: "Крышки Twist-off",
-      Сумма: "42 500 TJS",
-      Остаток: "17 500 TJS",
+      Сумма: "42 500 сом",
+      Остаток: "17 500 сом",
       Статус: "Частично оплачено",
     },
     {
       Дата: "2025-11-10",
       Клиент: "ООО 'Логистик Плюс'",
       Товар: "Фитинги для линий",
-      Сумма: "18 300 TJS",
-      Остаток: "8 300 TJS",
+      Сумма: "18 300 сом",
+      Остаток: "8 300 сом",
       Статус: "Частично оплачено",
     },
     {
       Дата: "2025-11-05",
       Клиент: "Завод 'АлюминТадж'",
       Товар: "Композитные бочки",
-      Сумма: "120 000 TJS",
-      Остаток: "120 000 TJS",
+      Сумма: "120 000 сом",
+      Остаток: "120 000 сом",
       Статус: "Неоплачено",
     },
     {
       Дата: "2025-10-28",
       Клиент: "ООО 'ГрандИмпорт'",
       Товар: "Партия капсул 0.5 л",
-      Сумма: "53 400 TJS",
-      Остаток: "0 TJS",
+      Сумма: "53 400 сом",
+      Остаток: "0 сом",
       Статус: "Оплачено",
     },
   ];
@@ -117,6 +136,20 @@ const seedTableData = (): DebtRecord[] => {
 const tableData = ref<DebtRecord[]>(seedTableData());
 const selectedDebt = ref<DebtRecord | null>(null);
 const showPartialPayment = ref(false);
+const showPaymentHistory = ref(false);
+const paymentHistory = ref<Record<string, PaymentEntry[]>>({
+  "ООО 'ВостокТрейд'": [
+    { date: "2025-11-18", amount: 25000, currency: "сом", method: "Банк" },
+    { date: "2025-11-12", amount: 15000, currency: "сом", method: "Наличные" },
+  ],
+  "ИП Сайфутдинов": [
+    { date: "2025-11-16", amount: 15000, currency: "сом", method: "Наличные" },
+    { date: "2025-11-15", amount: 12000, currency: "сом", method: "Перевод" },
+  ],
+});
+const currentPayments = computed(() =>
+  selectedDebt.value ? paymentHistory.value[selectedDebt.value.Клиент] ?? [] : []
+);
 
 const isManagerView = computed(() => getCurrentRole() === "manager");
 
@@ -135,8 +168,8 @@ const handleDelete = (row: Record<string, any>) => {
   }
 };
 
-const handlePartialPayment = (row: DebtRecord) => {
-  selectedDebt.value = row;
+const handlePartialPayment = (row: Record<string, any>) => {
+  selectedDebt.value = row as DebtRecord;
   showPartialPayment.value = true;
 };
 
@@ -161,5 +194,14 @@ const confirmPartialPayment = (amount: number) => {
   }
 
   closePartialPayment();
+};
+
+const openPaymentHistory = (row: Record<string, any>) => {
+  selectedDebt.value = row as DebtRecord;
+  showPaymentHistory.value = true;
+};
+
+const closePaymentHistory = () => {
+  showPaymentHistory.value = false;
 };
 </script>

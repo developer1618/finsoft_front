@@ -114,7 +114,7 @@ const cards = [
   {
     id: "varzob-expense",
     title: "Расход Варзоб",
-    value: "72 000 TJS",
+    value: "72 000 сом",
     subtitle: "Контроль затрат",
     icon: ArrowTrendingDownIcon,
     iconClass: "text-rose-600",

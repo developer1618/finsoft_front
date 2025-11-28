@@ -201,7 +201,7 @@
                         Расход Варзоб
                       </p>
                       <p class="text-2xl font-bold text-rose-600 mt-2">
-                        72 000 TJS
+                        72 000 сом
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">

@@ -13,7 +13,7 @@
               {{ title }}
             </h3>
             <button @click="handleClose" class="text-gray-400 hover:text-gray-600">
-              <XMarkIcon class="w-6 h-6" />
+              <XMarkIcon class="w-7 h-7" />
             </button>
           </div>
 
@@ -117,7 +117,7 @@ watch(
   }
 );
 
-const currencyLabel = computed(() => props.currency ?? "TJS");
+const currencyLabel = computed(() => props.currency ?? "сом");
 
 const remainingDisplay = computed(() => {
   if (props.remainingLabel) {
