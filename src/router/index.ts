@@ -1,18 +1,4 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
-import Login from "../views/LoginView.vue";
-import AdminPanel from "../views/AdminPanelView.vue";
-import ManagerPanel from "../views/ManagerPanelView.vue";
-import CapsuleWorkshop from "../views/CapsuleWorkshopView.vue";
-import ChineseCargo from "../views/ChineseCargoView.vue";
-import CupWorkshop from "../views/CupWorkshopView.vue";
-import IncomeExpense from "../views/IncomeExpenseView.vue";
-import VarzobExpense from "../views/VarzobExpenseView.vue";
-import Profile from "../views/ProfileView.vue";
-import ReportsPanel from "../views/ReportsPanelView.vue";
-import Settings from "../views/SettingsView.vue";
-import Warehouse from "../views/WarehouseView.vue";
-import FactoryWarehouse from "../views/FactoryWarehouseView.vue";
-import Debts from "../views/DebtsView.vue";
 import { getCurrentRole, type UserRole } from "../stores/auth";
 
 declare module "vue-router" {
@@ -25,73 +11,73 @@ const createSectionRoutes = (
   roles: UserRole[],
   namePrefix: "Admin" | "Manager"
 ): RouteRecordRaw[] => [
-  {
-    path: "capsule-workshop",
-    name: `${namePrefix}CapsuleWorkshop`,
-    component: CapsuleWorkshop,
-    meta: { roles },
-  },
     {
-    path: "chinese-cargo",
-    name: `${namePrefix}ChineseCargo`,
-    component: ChineseCargo,
-    meta: { roles },
-  },
-  {
-    path: "cup-workshop",
-    name: `${namePrefix}CupWorkshop`,
-    component: CupWorkshop,
-    meta: { roles },
-  },
-  {
-    path: "income-expense",
-    name: `${namePrefix}IncomeExpense`,
-    component: IncomeExpense,
-    meta: { roles },
-  },
-  {
-    path: "varzob-expense",
-    name: `${namePrefix}VarzobExpense`,
-    component: VarzobExpense,
-    meta: { roles },
-  },
-  {
-    path: "profile",
-    name: `${namePrefix}Profile`,
-    component: Profile,
-    meta: { roles },
-  },
-  {
-    path: "reports",
-    name: `${namePrefix}ReportsPanel`,
-    component: ReportsPanel,
-    meta: { roles },
-  },
-  {
-    path: "settings",
-    name: `${namePrefix}Settings`,
-    component: Settings,
-    meta: { roles },
-  },
-  {
-    path: "warehouse",
-    name: `${namePrefix}Warehouse`,
-    component: Warehouse,
-    meta: { roles },
-  },
-  {
-    path: "factory-warehouse",
-    name: `${namePrefix}FactoryWarehouse`,
-    component: FactoryWarehouse,
-    meta: { roles },
-  },
-  {
-    path: "debts",
-    name: `${namePrefix}Debts`,
-    component: Debts,
-    meta: { roles },
-  },
-];
+      path: "capsule-workshop",
+      name: `${namePrefix}CapsuleWorkshop`,
+      component: () => import("../views/CapsuleWorkshopView.vue"),
+      meta: { roles },
+    },
+    {
+      path: "chinese-cargo",
+      name: `${namePrefix}ChineseCargo`,
+      component: () => import("../views/ChineseCargoView.vue"),
+      meta: { roles },
+    },
+    {
+      path: "cup-workshop",
+      name: `${namePrefix}CupWorkshop`,
+      component: () => import("../views/CupWorkshopView.vue"),
+      meta: { roles },
+    },
+    {
+      path: "income-expense",
+      name: `${namePrefix}IncomeExpense`,
+      component: () => import("../views/IncomeExpenseView.vue"),
+      meta: { roles },
+    },
+    {
+      path: "varzob-expense",
+      name: `${namePrefix}VarzobExpense`,
+      component: () => import("../views/VarzobExpenseView.vue"),
+      meta: { roles },
+    },
+    {
+      path: "profile",
+      name: `${namePrefix}Profile`,
+      component: () => import("../views/ProfileView.vue"),
+      meta: { roles },
+    },
+    {
+      path: "reports",
+      name: `${namePrefix}ReportsPanel`,
+      component: () => import("../views/ReportsPanelView.vue"),
+      meta: { roles },
+    },
+    {
+      path: "settings",
+      name: `${namePrefix}Settings`,
+      component: () => import("../views/SettingsView.vue"),
+      meta: { roles },
+    },
+    {
+      path: "warehouse",
+      name: `${namePrefix}Warehouse`,
+      component: () => import("../views/WarehouseView.vue"),
+      meta: { roles },
+    },
+    {
+      path: "factory-warehouse",
+      name: `${namePrefix}FactoryWarehouse`,
+      component: () => import("../views/FactoryWarehouseView.vue"),
+      meta: { roles },
+    },
+    {
+      path: "debts",
+      name: `${namePrefix}Debts`,
+      component: () => import("../views/DebtsView.vue"),
+      meta: { roles },
+    },
+  ];
 
 const routes: RouteRecordRaw[] = [
   {
@@ -101,19 +87,19 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/login",
     name: "Login",
-    component: Login,
+    component: () => import("../views/LoginView.vue"),
   },
   {
     path: "/admin",
     name: "AdminPanel",
-    component: AdminPanel,
+    component: () => import("../views/AdminPanelView.vue"),
     meta: { roles: ["admin"] },
     children: createSectionRoutes(["admin"], "Admin"),
   },
   {
     path: "/manager",
     name: "ManagerPanel",
-    component: ManagerPanel,
+    component: () => import("../views/ManagerPanelView.vue"),
     meta: { roles: ["manager"] },
     children: createSectionRoutes(["manager"], "Manager"),
   },

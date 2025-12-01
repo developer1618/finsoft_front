@@ -54,7 +54,7 @@
                 <p :class="['mt-2 text-2xl font-semibold', card.valueClass]">
                   {{ card.value }}
                 </p>
-                <p class="mt-1 text-xs text-gray-500">
+                <p v-if="card.subtitle" :class="['mt-1 text-2xl font-semibold', card.valueClass]">
                   {{ card.subtitle }}
                 </p>
               </div>
@@ -103,7 +103,7 @@ const cards = [
     id: "income-expense",
     title: "Доход / Расход",
     value: "$45,250 / $28,750",
-    subtitle: "Финансовый отчёт",
+    subtitle: "452,500 сом / 287,500 сом",
     icon: BanknotesIcon,
     iconClass: "text-green-600",
     route: "/manager/income-expense",
@@ -114,8 +114,8 @@ const cards = [
   {
     id: "varzob-expense",
     title: "Расход Варзоб",
-    value: "72 000 сом",
-    subtitle: "Контроль затрат",
+    value: "72,000 сом",
+    subtitle: "$720",
     icon: ArrowTrendingDownIcon,
     iconClass: "text-rose-600",
     route: "/manager/varzob-expense",
@@ -127,7 +127,7 @@ const cards = [
     id: "chinese-cargo",
     title: "Китайские грузы",
     value: "1,248 кг",
-    subtitle: "Статусы поставок",
+    subtitle: "156 шт",
     icon: TruckIcon,
     iconClass: "text-orange-600",
     route: "/manager/chinese-cargo",
@@ -162,7 +162,7 @@ const cards = [
   {
     id: "warehouse",
     title: "Склад цех",
-    value: "320 позиций",
+    value: "15,240 шт",
     subtitle: "Остатки на складе",
     icon: BuildingStorefrontIcon,
     iconClass: "text-teal-600",
@@ -174,8 +174,8 @@ const cards = [
   {
     id: "factory-warehouse",
     title: "Склад завод",
-    value: "12 тонн",
-    subtitle: "Запасы сырья",
+    value: "12,000 кг",
+    subtitle: "480 шт",
     icon: BuildingOffice2Icon,
     iconClass: "text-cyan-600",
     route: "/manager/factory-warehouse",
@@ -186,7 +186,7 @@ const cards = [
   {
     id: "debts",
     title: "Долги",
-    value: "95 000 сом / 16 000 $",
+    value: "95,000 сом / 16,000 $",
     subtitle: "Управление задолженностями",
     icon: DocumentCurrencyDollarIcon,
     iconClass: "text-rose-600",

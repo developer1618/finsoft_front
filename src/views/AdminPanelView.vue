@@ -156,12 +156,15 @@
                   class="bg-linear-to-br from-green-50 to-green-100 rounded-lg shadow-md p-6 border-l-4 border-green-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   <div class="flex items-center justify-between">
-                    <div>
+                    <div class="flex-1">
                       <p class="text-lg font-medium text-gray-600">
                         Доход / Расход
                       </p>
-                      <p class="text-2xl font-bold text-green-600 mt-2">
+                      <p class="text-xl font-bold text-green-600 mt-2">
                         $45,250 / $28,750
+                      </p>
+                      <p class="text-xl font-bold text-green-600 mt-1">
+                        452,500 сом / 287,500 сом
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -176,12 +179,15 @@
                   class="bg-linear-to-br from-orange-50 to-orange-100 rounded-lg shadow-md p-6 border-l-4 border-orange-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   <div class="flex items-center justify-between">
-                    <div>
+                    <div class="flex-1">
                       <p class="text-lg font-medium text-gray-600">
                         Китайские грузы
                       </p>
-                      <p class="text-2xl font-bold text-orange-600 mt-2">
+                      <p class="text-xl font-bold text-orange-600 mt-2">
                         1,248 кг
+                      </p>
+                      <p class="text-xl font-bold text-orange-600 mt-1">
+                        156 шт
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -196,12 +202,15 @@
                   class="bg-linear-to-br from-rose-50 to-rose-100 rounded-lg shadow-md p-6 border-l-4 border-rose-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   <div class="flex items-center justify-between">
-                    <div>
+                    <div class="flex-1">
                       <p class="text-lg font-medium text-gray-600">
                         Расход Варзоб
                       </p>
-                      <p class="text-2xl font-bold text-rose-600 mt-2">
-                        72 000 сом
+                      <p class="text-xl font-bold text-rose-600 mt-2">
+                        72,000 сом
+                      </p>
+                      <p class="text-xl font-bold text-rose-600 mt-1">
+                        $720
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -256,10 +265,10 @@
                   class="bg-linear-to-br from-teal-50 to-teal-100 rounded-lg shadow-md p-6 border-l-4 border-teal-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   <div class="flex items-center justify-between">
-                    <div>
+                    <div class="flex-1">
                       <p class="text-lg font-medium text-gray-600">Склад цех</p>
-                      <p class="text-2xl font-bold text-teal-600 mt-2">
-                        320 позиций
+                      <p class="text-xl font-bold text-teal-600 mt-2">
+                        15,240 шт
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -274,12 +283,15 @@
                   class="bg-linear-to-br from-cyan-50 via-sky-50 to-cyan-100 rounded-lg shadow-md p-6 border-l-4 border-cyan-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   <div class="flex items-center justify-between">
-                    <div>
+                    <div class="flex-1">
                       <p class="text-lg font-medium text-cyan-900">
                         Склад завод
                       </p>
-                      <p class="text-2xl font-bold text-cyan-700 mt-2">
-                        12 тонн сырья
+                      <p class="text-xl font-bold text-cyan-700 mt-2">
+                        12,000 кг
+                      </p>
+                      <p class="text-xl font-bold text-cyan-700 mt-1">
+                        480 шт
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">

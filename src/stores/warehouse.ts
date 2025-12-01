@@ -1,0 +1,203 @@
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import type { WarehouseItem, FilterParams, ApiError } from '../types';
+import { warehouseService } from '../services';
+
+/**
+ * Warehouse Store
+ * Manages warehouse inventory items
+ */
+export const useWarehouseStore = defineStore('warehouse', () => {
+    // State
+    const items = ref<WarehouseItem[]>([]);
+    const factoryItems = ref<WarehouseItem[]>([]);
+    const currentItem = ref<WarehouseItem | null>(null);
+    const loading = ref(false);
+    const error = ref<ApiError | null>(null);
+    const totalPages = ref(1);
+    const currentPage = ref(1);
+    const perPage = ref(10);
+    const totalItems = ref(0);
+
+    // Getters
+    const capsuleWarehouseItems = computed(() =>
+        items.value.filter(item => item.location === 'Склад Капсула')
+    );
+
+    const cupWarehouseItems = computed(() =>
+        items.value.filter(item => item.location === 'Склад Стакан')
+    );
+
+    const totalItemsCount = computed(() => items.value.length);
+
+    const lowStockItems = computed(() =>
+        items.value.filter(item => item.quantity < 10)
+    );
+
+    // Actions
+    async function fetchItems(params?: FilterParams) {
+        loading.value = true;
+        error.value = null;
+
+        try {
+            const response = await warehouseService.getAll(params);
+
+            if (response.success && response.data) {
+                items.value = response.data.data;
+                totalPages.value = response.data.meta.lastPage;
+                currentPage.value = response.data.meta.currentPage;
+                perPage.value = response.data.meta.perPage;
+                totalItems.value = response.data.meta.total;
+            }
+        } catch (err) {
+            error.value = err as ApiError;
+            console.error('Failed to fetch warehouse items:', err);
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function fetchFactoryItems(params?: FilterParams) {
+        loading.value = true;
+        error.value = null;
+
+        try {
+            const response = await warehouseService.getFactoryItems(params);
+
+            if (response.success && response.data) {
+                factoryItems.value = response.data.data;
+            }
+        } catch (err) {
+            error.value = err as ApiError;
+            console.error('Failed to fetch factory warehouse items:', err);
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function fetchItemById(id: string) {
+        loading.value = true;
+        error.value = null;
+
+        try {
+            const response = await warehouseService.getById(id);
+
+            if (response.success && response.data) {
+                currentItem.value = response.data;
+                return response.data;
+            }
+        } catch (err) {
+            error.value = err as ApiError;
+            console.error('Failed to fetch warehouse item:', err);
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function createItem(itemData: Partial<WarehouseItem>) {
+        loading.value = true;
+        error.value = null;
+
+        try {
+            const response = await warehouseService.create(itemData);
+
+            if (response.success && response.data) {
+                items.value.unshift(response.data);
+                return response.data;
+            }
+        } catch (err) {
+            error.value = err as ApiError;
+            console.error('Failed to create warehouse item:', err);
+            throw err;
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function updateItem(id: string, itemData: Partial<WarehouseItem>) {
+        loading.value = true;
+        error.value = null;
+
+        try {
+            const response = await warehouseService.update(id, itemData);
+
+            if (response.success && response.data) {
+                const index = items.value.findIndex(item => item.id === id);
+                if (index !== -1) {
+                    items.value[index] = response.data;
+                }
+                return response.data;
+            }
+        } catch (err) {
+            error.value = err as ApiError;
+            console.error('Failed to update warehouse item:', err);
+            throw err;
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function deleteItem(id: string) {
+        loading.value = true;
+        error.value = null;
+
+        try {
+            const response = await warehouseService.delete(id);
+
+            if (response.success) {
+                items.value = items.value.filter(item => item.id !== id);
+            }
+        } catch (err) {
+            error.value = err as ApiError;
+            console.error('Failed to delete warehouse item:', err);
+            throw err;
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    function clearError() {
+        error.value = null;
+    }
+
+    function resetStore() {
+        items.value = [];
+        factoryItems.value = [];
+        currentItem.value = null;
+        loading.value = false;
+        error.value = null;
+        totalPages.value = 1;
+        currentPage.value = 1;
+        perPage.value = 10;
+        totalItems.value = 0;
+    }
+
+    return {
+        // State
+        items,
+        factoryItems,
+        currentItem,
+        loading,
+        error,
+        totalPages,
+        currentPage,
+        perPage,
+        totalItems,
+
+        // Getters
+        capsuleWarehouseItems,
+        cupWarehouseItems,
+        totalItemsCount,
+        lowStockItems,
+
+        // Actions
+        fetchItems,
+        fetchFactoryItems,
+        fetchItemById,
+        createItem,
+        updateItem,
+        deleteItem,
+        clearError,
+        resetStore,
+    };
+});
