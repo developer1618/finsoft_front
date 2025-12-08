@@ -1,12 +1,12 @@
-const pad = (segment: string, length = 2) => segment.padStart(length, "0");
+const pad = (segment: string, length = 2) => segment.padStart(length, '0');
 
 export const displayToIsoDate = (value?: string): string | null => {
   if (!value) {
     return null;
   }
 
-  const normalized = value.replace(/\s/g, "");
-  const parts = normalized.split(".");
+  const normalized = value.replace(/\s/g, '');
+  const parts = normalized.split('.');
   if (parts.length !== 3) {
     return null;
   }
@@ -16,24 +16,36 @@ export const displayToIsoDate = (value?: string): string | null => {
     return null;
   }
 
+  const dayNum = parseInt(day, 10);
+  const monthNum = parseInt(month, 10);
+  const yearNum = parseInt(year, 10);
+
+  if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) {
+    return null;
+  }
+
+  if (dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12) {
+    return null;
+  }
+
   return `${year}-${pad(month)}-${pad(day)}`;
 };
 
 export const isoToDisplayDate = (value?: string): string => {
   if (!value) {
-    return "";
+    return '';
   }
 
-  if (value.includes(".")) {
+  if (value.includes('.')) {
     return value;
   }
 
-  const [datePart] = value.split("T");
+  const [datePart] = value.split('T');
   if (!datePart) {
     return value;
   }
 
-  const parts = datePart.split("-");
+  const parts = datePart.split('-');
   if (parts.length !== 3) {
     return value;
   }
@@ -51,8 +63,8 @@ export const normalizeToIsoDate = (value?: string): string | null => {
     return null;
   }
 
-  if (value.includes("-")) {
-    const [isoPart] = value.split("T");
+  if (value.includes('-')) {
+    const [isoPart] = value.split('T');
     return isoPart ?? null;
   }
 
@@ -61,15 +73,15 @@ export const normalizeToIsoDate = (value?: string): string | null => {
 
 export const applyDateMask = (value?: string): string => {
   if (!value) {
-    return "";
+    return '';
   }
 
-  const digits = value.replace(/\D/g, "").slice(0, 8);
+  const digits = value.replace(/\D/g, '').slice(0, 8);
   const day = digits.slice(0, 2);
   const month = digits.slice(2, 4);
   const year = digits.slice(4, 8);
 
-  let masked = "";
+  let masked = '';
 
   if (day) {
     masked = day.length === 2 ? `${day}.` : day;
@@ -84,4 +96,28 @@ export const applyDateMask = (value?: string): string => {
   }
 
   return masked;
+};
+
+export const isValidDate = (dateString: string): boolean => {
+  const date = new Date(dateString);
+  return date instanceof Date && !isNaN(date.getTime());
+};
+
+export const formatDateTime = (value?: string): string => {
+  if (!value) {
+    return '';
+  }
+
+  const date = new Date(value);
+  if (isNaN(date.getTime())) {
+    return value;
+  }
+
+  const day = pad(String(date.getDate()));
+  const month = pad(String(date.getMonth() + 1));
+  const year = date.getFullYear();
+  const hours = pad(String(date.getHours()));
+  const minutes = pad(String(date.getMinutes()));
+
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
 };

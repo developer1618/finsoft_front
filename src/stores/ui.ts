@@ -10,18 +10,12 @@ export interface Toast {
     duration?: number;
 }
 
-/**
- * UI Store
- * Manages UI state including notifications, modals, and theme
- */
 export const useUIStore = defineStore('ui', () => {
-    // State
     const toasts = ref<Toast[]>([]);
     const loading = ref(false);
     const sidebarOpen = ref(false);
     const darkMode = ref(false);
 
-    // Actions
     function showToast(type: ToastType, message: string, duration = 3000) {
         const id = crypto.randomUUID();
         const toast: Toast = { id, type, message, duration };
@@ -99,13 +93,10 @@ export const useUIStore = defineStore('ui', () => {
     }
 
     return {
-        // State
         toasts,
         loading,
         sidebarOpen,
         darkMode,
-
-        // Actions
         showToast,
         removeToast,
         success,

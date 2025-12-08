@@ -1,16 +1,10 @@
-/**
- * Generic API response wrapper
- */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
     success: boolean;
     data?: T;
     message?: string;
     errors?: Record<string, string[]>;
 }
 
-/**
- * Paginated API response
- */
 export interface PaginatedResponse<T> {
     data: T[];
     meta: {
@@ -29,9 +23,6 @@ export interface PaginatedResponse<T> {
     };
 }
 
-/**
- * API error structure
- */
 export interface ApiError {
     message: string;
     statusCode: number;
@@ -39,22 +30,17 @@ export interface ApiError {
     timestamp?: string;
 }
 
-/**
- * Login request payload
- */
 export interface LoginRequest {
-    email: string;
+    username: string;
     password: string;
     remember?: boolean;
 }
 
-/**
- * Login response
- */
 export interface LoginResponse {
     user: {
         id: string;
-        email: string;
+        username: string;
+        email?: string;
         firstName: string;
         lastName: string;
         role: string;
@@ -65,16 +51,10 @@ export interface LoginResponse {
     expiresIn?: number;
 }
 
-/**
- * Refresh token request
- */
 export interface RefreshTokenRequest {
     refreshToken: string;
 }
 
-/**
- * Partial payment request
- */
 export interface PartialPaymentRequest {
     debtId: string;
     amount: number;
@@ -84,9 +64,6 @@ export interface PartialPaymentRequest {
     note?: string;
 }
 
-/**
- * Filter parameters for list queries
- */
 export interface FilterParams {
     page?: number;
     perPage?: number;
@@ -97,20 +74,14 @@ export interface FilterParams {
     dateTo?: string;
     status?: string;
     type?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
-/**
- * HTTP methods
- */
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-/**
- * Request configuration
- */
 export interface RequestConfig {
     headers?: Record<string, string>;
-    params?: Record<string, any>;
+    params?: Record<string, unknown>;
     timeout?: number;
     withCredentials?: boolean;
 }

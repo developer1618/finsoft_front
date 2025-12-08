@@ -197,11 +197,39 @@
               </div>
             </td>
           </tr>
+          <!-- Empty state message -->
+          <tr v-if="filteredData.length === 0">
+            <td
+              :colspan="canManage ? headers.length + 1 : headers.length"
+              class="px-6 py-12 text-center"
+            >
+              <div class="flex flex-col items-center justify-center text-gray-500">
+                <svg
+                  class="w-12 h-12 mb-4 text-gray-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                  />
+                </svg>
+                <p class="text-lg font-medium text-gray-900 mb-1">Нет данных</p>
+                <p class="text-sm text-gray-500">
+                  Таблица пуста. Добавьте новую запись, чтобы начать.
+                </p>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="flex items-center justify-between">
+
+    <div v-if="filteredData.length > 0" class="flex items-center justify-between">
       <div class="text-sm text-gray-600">
         Показано {{ (currentPage - 1) * itemsPerPage + 1 }} -
         {{ Math.min(currentPage * itemsPerPage, filteredData.length) }} из
@@ -269,16 +297,19 @@
 
   <template v-if="canManage">
     <AddModal
-      :isOpen="showAddModal"
+      v-if="showAddModal"
+      :isOpen="true"
       title="Добавить новую запись"
-      :headers="headers"
+      :headers="addFormHeaders"
       :status-options="normalizedStatusOptions"
+      :default-status="defaultStatus"
       @close="showAddModal = false"
       @confirm="handleAddConfirm"
     />
 
     <EditModal
-      :isOpen="showEditModal"
+      v-if="showEditModal"
+      :isOpen="true"
       title="Редактировать запись"
       :headers="headers"
       :initialData="selectedRow || {}"
@@ -288,7 +319,8 @@
     />
 
     <DeleteModal
-      :isOpen="showDeleteModal"
+      v-if="showDeleteModal"
+      :isOpen="true"
       title="Удалить запись"
       @close="showDeleteModal = false"
       @confirm="handleDeleteConfirm"
@@ -320,10 +352,12 @@ interface Props {
   title: string;
   description: string;
   headers: string[];
+  addHeaders?: string[];
   data: Record<string, any>[];
   canManage?: boolean;
   isManagerView?: boolean;
   statusOptions?: string[];
+  defaultStatus?: string;
   partialPaymentEnabled?: boolean;
   rowClickable?: boolean;
 }
@@ -348,6 +382,7 @@ const normalizedStatusOptions = computed(() =>
 );
 const partialPaymentEnabled = computed(() => Boolean(props.partialPaymentEnabled));
 const rowClickable = computed(() => Boolean(props.rowClickable));
+const addFormHeaders = computed(() => props.addHeaders || props.headers);
 
 const emit = defineEmits<{
   add: [data: Record<string, any>];
@@ -627,7 +662,12 @@ const handleAddConfirm = (formData: Record<string, any>) => {
 };
 
 const handleEditConfirm = (formData: Record<string, any>) => {
-  emit("edit", formData);
+  // Merge form data with original row data (to preserve id and original)
+  const payload = {
+    ...selectedRow.value,
+    ...formData,
+  };
+  emit("edit", payload);
   showEditModal.value = false;
 };
 
@@ -724,6 +764,7 @@ const getStatusClass = (status: string) => {
     "Оплачено": "bg-emerald-100 text-emerald-800",
     "Принято в Душанбе": "bg-green-100 text-green-800",
     "Заказано в Китае": "bg-yellow-100 text-yellow-800",
+    "Незаказано": "bg-red-100 text-red-800",
   };
 
   return baseClass + (statusColors[status] ?? "bg-gray-100 text-gray-800");

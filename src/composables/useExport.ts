@@ -1,57 +1,43 @@
 import * as XLSX from 'xlsx';
+import { sanitizeFilename } from '../utils/sanitize';
 
-/**
- * Composable for exporting data to Excel
- */
 export function useExport() {
-    /**
-     * Export data to Excel file
-     */
     const exportToExcel = (
-        data: Record<string, any>[],
+        data: Record<string, unknown>[],
         filename: string,
         sheetName = 'Sheet1'
     ) => {
         try {
-            // Create worksheet from data
             const worksheet = XLSX.utils.json_to_sheet(data);
-
-            // Create workbook
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
 
-            // Generate Excel file
             const excelBuffer = XLSX.write(workbook, {
                 bookType: 'xlsx',
                 type: 'array',
             });
 
-            // Create blob and download
             const blob = new Blob([excelBuffer], {
                 type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             });
 
+            const safeFilename = sanitizeFilename(filename);
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            link.download = `${safeFilename}_${new Date().toISOString().split('T')[0]}.xlsx`;
             link.click();
 
-            // Cleanup
             URL.revokeObjectURL(url);
 
             return true;
-        } catch (error) {
-            console.error('Failed to export to Excel:', error);
+        } catch {
             return false;
         }
     };
 
-    /**
-     * Export multiple sheets to Excel
-     */
     const exportMultipleSheets = (
-        sheets: Array<{ data: Record<string, any>[]; name: string }>,
+        sheets: Array<{ data: Record<string, unknown>[]; name: string }>,
         filename: string
     ) => {
         try {
@@ -71,33 +57,29 @@ export function useExport() {
                 type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             });
 
+            const safeFilename = sanitizeFilename(filename);
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            link.download = `${safeFilename}_${new Date().toISOString().split('T')[0]}.xlsx`;
             link.click();
 
             URL.revokeObjectURL(url);
 
             return true;
-        } catch (error) {
-            console.error('Failed to export to Excel:', error);
+        } catch {
             return false;
         }
     };
 
-    /**
-     * Export table data with custom headers
-     */
     const exportTableToExcel = (
         headers: string[],
-        data: Record<string, any>[],
+        data: Record<string, unknown>[],
         filename: string
     ) => {
         try {
-            // Map data to use only specified headers
             const mappedData = data.map(row => {
-                const newRow: Record<string, any> = {};
+                const newRow: Record<string, unknown> = {};
                 headers.forEach(header => {
                     newRow[header] = row[header] ?? '';
                 });
@@ -105,8 +87,7 @@ export function useExport() {
             });
 
             return exportToExcel(mappedData, filename);
-        } catch (error) {
-            console.error('Failed to export table to Excel:', error);
+        } catch {
             return false;
         }
     };

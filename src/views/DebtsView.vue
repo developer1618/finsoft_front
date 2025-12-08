@@ -3,9 +3,11 @@
     title="Долги клиентов"
     description="Контроль задолженностей и статусов оплат"
     :headers="['Дата', 'Клиент', 'Товар', 'Сумма', 'Остаток', 'Статус']"
+    :add-headers="['Дата', 'Клиент', 'Товар', 'Сумма', 'Статус']"
     :data="tableData"
     :is-manager-view="isManagerView"
     :status-options="statusOptions"
+    default-status="Неоплачено"
     :partial-payment-enabled="true"
     :row-clickable="true"
     @add="handleAdd"
@@ -35,141 +37,128 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import DataTable from "../components/DataTable.vue";
 import PartialPaymentModal from "../components/PartialPaymentModal.vue";
 import PaymentHistoryModal from "../components/PaymentHistoryModal.vue";
 import { getCurrentRole } from "../stores/auth";
+import { useDebtsStore } from "../stores/debts";
+import { storeToRefs } from "pinia";
+import type { DebtStatus, Currency } from "../types";
+
+const debtsStore = useDebtsStore();
+const { debts } = storeToRefs(debtsStore);
 
 const statusOptions = ["Неоплачено", "Частично оплачено", "Оплачено"];
-
-type PaymentEntry = {
-  date: string;
-  amount: number;
-  currency: string;
-  method: string;
-};
-
-type DebtRecord = {
-  Дата: string;
-  Клиент: string;
-  Товар: string;
-  Сумма: string;
-  Остаток: string;
-  Статус: string;
-  total: number;
-  remaining: number;
-  currency: string;
-  client: string;
-};
-
-const parseAmount = (value: string): { amount: number; currency: string } => {
-  const match = value.match(/([\d\s.,]+)/);
-  const currencyMatch = value.replace(match?.[0] ?? "", "").trim() || "сом";
-  const amount = Number((match?.[0] ?? "0").replace(/\s/g, "").replace(",", "."));
-  return {
-    amount: Number.isNaN(amount) ? 0 : amount,
-    currency: currencyMatch || "сом",
-  };
-};
 
 const formatAmount = (value: number, currency: string): string =>
   `${value.toLocaleString("ru-RU")} ${currency}`;
 
-const seedTableData = (): DebtRecord[] => {
-  const raw = [
-    {
-      Дата: "2025-11-16",
-      Клиент: "ООО 'ВостокТрейд'",
-      Товар: "Линейка ПЭТ-тар",
-      Сумма: "75 000 сом",
-      Остаток: "75 000 сом",
-      Статус: "Неоплачено",
-    },
-    {
-      Дата: "2025-11-14",
-      Клиент: "ИП Сайфутдинов",
-      Товар: "Крышки Twist-off",
-      Сумма: "42 500 сом",
-      Остаток: "17 500 сом",
-      Статус: "Частично оплачено",
-    },
-    {
-      Дата: "2025-11-10",
-      Клиент: "ООО 'Логистик Плюс'",
-      Товар: "Фитинги для линий",
-      Сумма: "18 300 сом",
-      Остаток: "8 300 сом",
-      Статус: "Частично оплачено",
-    },
-    {
-      Дата: "2025-11-05",
-      Клиент: "Завод 'АлюминТадж'",
-      Товар: "Композитные бочки",
-      Сумма: "120 000 сом",
-      Остаток: "120 000 сом",
-      Статус: "Неоплачено",
-    },
-    {
-      Дата: "2025-10-28",
-      Клиент: "ООО 'ГрандИмпорт'",
-      Товар: "Партия капсул 0.5 л",
-      Сумма: "53 400 сом",
-      Остаток: "0 сом",
-      Статус: "Оплачено",
-    },
-  ];
+const tableData = computed(() => {
+  return debts.value.map((debt) => ({
+    id: debt.id,
+    Дата: debt.date,
+    Клиент: debt.client,
+    Товар: debt.product,
+    Сумма: formatAmount(debt.totalAmount, debt.currency),
+    Остаток: formatAmount(debt.remainingAmount, debt.currency),
+    Статус: debt.status,
+    original: debt,
+    total: debt.totalAmount,
+    remaining: debt.remainingAmount,
+    currency: debt.currency,
+    client: debt.client,
+  }));
+});
 
-  return raw.map((item) => {
-    const { amount, currency } = parseAmount(item.Сумма);
-    const { amount: remainingAmount } = parseAmount(item.Остаток);
-    return {
-      ...item,
-      total: amount,
-      remaining: remainingAmount,
-      currency,
-      client: item.Клиент,
-    };
-  });
-};
-
-const tableData = ref<DebtRecord[]>(seedTableData());
-const selectedDebt = ref<DebtRecord | null>(null);
+const selectedDebt = ref<any>(null);
 const showPartialPayment = ref(false);
 const showPaymentHistory = ref(false);
-const paymentHistory = ref<Record<string, PaymentEntry[]>>({
-  "ООО 'ВостокТрейд'": [
-    { date: "2025-11-18", amount: 25000, currency: "сом", method: "Банк" },
-    { date: "2025-11-12", amount: 15000, currency: "сом", method: "Наличные" },
-  ],
-  "ИП Сайфутдинов": [
-    { date: "2025-11-16", amount: 15000, currency: "сом", method: "Наличные" },
-    { date: "2025-11-15", amount: 12000, currency: "сом", method: "Перевод" },
-  ],
-});
-const currentPayments = computed(() =>
-  selectedDebt.value ? paymentHistory.value[selectedDebt.value.Клиент] ?? [] : []
-);
+const currentPayments = ref<any[]>([]);
 
 const isManagerView = computed(() => getCurrentRole() === "manager");
 
-const handleAdd = () => {
-  alert("Добавление новой задолженности: здесь появится форма добавления");
+onMounted(() => {
+  debtsStore.fetchDebts();
+});
+
+const parseAmount = (value: string) => {
+  if (!value) return { amount: 0, currency: 'сом' as Currency };
+  
+  const trimmed = value.trim();
+  const isDollar = trimmed.startsWith('$');
+  const currency = isDollar ? '$' : 'сом';
+  const amountStr = trimmed.replace(/[^\d.,]/g, '').replace(',', '.');
+  
+  return {
+    amount: parseFloat(amountStr) || 0,
+    currency: currency as Currency
+  };
 };
 
-const handleEdit = (row: Record<string, any>) => {
-  alert(`Редактирование долга: ${JSON.stringify(row)}`);
+const handleAdd = async (data: Record<string, any>) => {
+  try {
+    const { amount, currency } = parseAmount(data['Сумма'] || '');
+    
+    if (!data['Дата'] || !data['Клиент'] || !data['Товар']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await debtsStore.createDebt({
+      date: data['Дата'],
+      client: data['Клиент'],
+      product: data['Товар'],
+      totalAmount: amount,
+      remainingAmount: amount,
+      currency,
+      status: (data['Статус'] as DebtStatus) || 'Неоплачено'
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при создании");
+  }
 };
 
-const handleDelete = (row: Record<string, any>) => {
-  const index = tableData.value.findIndex((item) => item === row);
-  if (index > -1) {
-    tableData.value.splice(index, 1);
+const handleEdit = async (data: Record<string, any>) => {
+  try {
+    const { amount, currency } = parseAmount(data['Сумма'] || '');
+    const { amount: remainingAmount } = parseAmount(data['Остаток'] || '');
+    const id = data.original?.id || data.id;
+    
+    if (!id) {
+      alert('Ошибка: ID записи не найден');
+      return;
+    }
+    
+    if (!data['Дата'] || !data['Клиент'] || !data['Товар']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await debtsStore.updateDebt(id, {
+      date: data['Дата'],
+      client: data['Клиент'],
+      product: data['Товар'],
+      totalAmount: amount,
+      remainingAmount: remainingAmount || data.original?.remainingAmount || amount,
+      currency,
+      status: (data['Статус'] as DebtStatus) || 'Неоплачено'
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при обновлении");
+  }
+};
+
+const handleDelete = async (row: Record<string, any>) => {
+  try {
+    await debtsStore.deleteDebt(row.original.id);
+  } catch {
+    alert("Ошибка при удалении");
   }
 };
 
 const handlePartialPayment = (row: Record<string, any>) => {
-  selectedDebt.value = row as DebtRecord;
+  selectedDebt.value = row;
   showPartialPayment.value = true;
 };
 
@@ -178,27 +167,30 @@ const closePartialPayment = () => {
   selectedDebt.value = null;
 };
 
-const confirmPartialPayment = (amount: number) => {
-  if (!selectedDebt.value) {
-    return;
+const confirmPartialPayment = async (amount: number) => {
+  if (!selectedDebt.value) return;
+
+  try {
+    await debtsStore.makePartialPayment(selectedDebt.value.original.id, {
+      amount,
+      currency: selectedDebt.value.currency,
+      method: 'Наличные' as any,
+      date: new Date().toISOString().split('T')[0]
+    });
+    closePartialPayment();
+  } catch {
+    alert("Ошибка при оплате");
   }
-
-  const updatedRemaining = Math.max(selectedDebt.value.remaining - amount, 0);
-  selectedDebt.value.remaining = Number(updatedRemaining.toFixed(2));
-  selectedDebt.value.Остаток = formatAmount(selectedDebt.value.remaining, selectedDebt.value.currency);
-
-  if (selectedDebt.value.remaining <= 0) {
-    selectedDebt.value.Статус = "Оплачено";
-  } else if (selectedDebt.value.remaining < selectedDebt.value.total) {
-    selectedDebt.value.Статус = "Частично оплачено";
-  }
-
-  closePartialPayment();
 };
 
-const openPaymentHistory = (row: Record<string, any>) => {
-  selectedDebt.value = row as DebtRecord;
+const openPaymentHistory = async (row: Record<string, any>) => {
+  selectedDebt.value = row;
   showPaymentHistory.value = true;
+  try {
+    currentPayments.value = await debtsStore.getPaymentHistory(row.original.id);
+  } catch {
+    currentPayments.value = [];
+  }
 };
 
 const closePaymentHistory = () => {

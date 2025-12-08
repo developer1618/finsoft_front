@@ -85,14 +85,14 @@
                 <span class="sr-only">Открыть меню пользователя</span>
                 <img
                   class="size-8 rounded-full bg-gray-50 outline -outline-offset-1 outline-black/5"
-                  :src="logoUrl"
-                  alt="Имя Фамилия"
+                  :src="userAvatar"
+                  :alt="userName"
                 />
                 <span class="hidden lg:flex lg:items-center">
                   <span
                     class="ml-4 text-sm/6 font-semibold text-gray-900"
                     aria-hidden="true"
-                    >Имя Фамилия</span
+                    >{{ userName }}</span
                   >
                   <ChevronDownIcon
                     class="ml-2 size-5 text-gray-400"
@@ -160,11 +160,11 @@
                       <p class="text-lg font-medium text-gray-600">
                         Доход / Расход
                       </p>
-                      <p class="text-xl font-bold text-green-600 mt-2">
-                        $45,250 / $28,750
+                      <p class="text-2xl font-bold text-green-600 mt-2">
+                        {{ incomeExpenseTotals.dollarLine }}
                       </p>
-                      <p class="text-xl font-bold text-green-600 mt-1">
-                        452,500 сом / 287,500 сом
+                      <p v-if="incomeExpenseTotals.somLine" class="text-xl font-bold text-green-600 mt-1">
+                        {{ incomeExpenseTotals.somLine }}
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -183,11 +183,8 @@
                       <p class="text-lg font-medium text-gray-600">
                         Китайские грузы
                       </p>
-                      <p class="text-xl font-bold text-orange-600 mt-2">
-                        1,248 кг
-                      </p>
-                      <p class="text-xl font-bold text-orange-600 mt-1">
-                        156 шт
+                      <p class="text-2xl font-bold text-orange-600 mt-2">
+                        {{ cargoTotals }}
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -206,11 +203,8 @@
                       <p class="text-lg font-medium text-gray-600">
                         Расход Варзоб
                       </p>
-                      <p class="text-xl font-bold text-rose-600 mt-2">
-                        72,000 сом
-                      </p>
-                      <p class="text-xl font-bold text-rose-600 mt-1">
-                        $720
+                      <p class="text-2xl font-bold text-rose-600 mt-2">
+                        {{ varzobTotals }}
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -230,7 +224,7 @@
                         Цех капсулы
                       </p>
                       <p class="text-2xl font-bold text-blue-600 mt-2">
-                        856 шт
+                        {{ capsuleTotals }}
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -250,7 +244,7 @@
                         Цех стакана
                       </p>
                       <p class="text-2xl font-bold text-purple-600 mt-2">
-                        1,234 шт
+                        {{ cupTotals }}
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -267,8 +261,8 @@
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
                       <p class="text-lg font-medium text-gray-600">Склад цех</p>
-                      <p class="text-xl font-bold text-teal-600 mt-2">
-                        15,240 шт
+                      <p class="text-2xl font-bold text-teal-600 mt-2">
+                        {{ warehouseTotals }}
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -287,11 +281,8 @@
                       <p class="text-lg font-medium text-cyan-900">
                         Склад завод
                       </p>
-                      <p class="text-xl font-bold text-cyan-700 mt-2">
-                        12,000 кг
-                      </p>
-                      <p class="text-xl font-bold text-cyan-700 mt-1">
-                        480 шт
+                      <p class="text-2xl font-bold text-cyan-700 mt-2">
+                        {{ factoryTotals }}
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -309,7 +300,7 @@
                     <div>
                       <p class="text-lg font-medium text-gray-700">Долги</p>
                       <p class="text-2xl font-bold text-rose-600 mt-2">
-                        95 000 сом / 16 000 $
+                        {{ debtsTotals }}
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
@@ -352,10 +343,119 @@ import logoUrl from "../assets/finsoft-logo.svg";
 import finsoftLogo from "../assets/finsoft-logo.svg";
 import { ChevronDownIcon } from "@heroicons/vue/20/solid";
 import { useAuth } from "../stores/auth";
+import { useExpensesStore } from "../stores/expenses";
+import { useDebtsStore } from "../stores/debts";
+import { useWarehouseStore } from "../stores/warehouse";
+import { useWorkshopsStore } from "../stores/workshops";
+import { storeToRefs } from "pinia";
 
 const route = useRoute();
 const router = useRouter();
-const { logout } = useAuth();
+const { user, logout } = useAuth();
+
+const userName = computed(() => {
+  if (user.value) {
+    return `${user.value.firstName} ${user.value.lastName}`;
+  }
+  return 'Пользователь';
+});
+
+const userAvatar = computed(() => {
+  return user.value?.avatar || logoUrl;
+});
+
+const expensesStore = useExpensesStore();
+const debtsStore = useDebtsStore();
+const warehouseStore = useWarehouseStore();
+const workshopsStore = useWorkshopsStore();
+
+const { transactions, varzobExpenses } = storeToRefs(expensesStore);
+const { debts } = storeToRefs(debtsStore);
+const { items: warehouseItems, factoryItems } = storeToRefs(warehouseStore);
+const { cargoItems, capsuleItems, cupItems } = storeToRefs(workshopsStore);
+
+const formatNum = (n: number) => n.toLocaleString('ru-RU');
+
+const incomeExpenseTotals = computed(() => {
+  if (!transactions.value.length) {
+    return { dollarLine: 'Нет данных', somLine: '' };
+  }
+  const incomeDollar = transactions.value
+    .filter(t => t.type === 'Доход' && t.currency === '$')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const incomeSom = transactions.value
+    .filter(t => t.type === 'Доход' && t.currency === 'сом')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const expenseDollar = transactions.value
+    .filter(t => t.type === 'Расход' && t.currency === '$')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const expenseSom = transactions.value
+    .filter(t => t.type === 'Расход' && t.currency === 'сом')
+    .reduce((sum, t) => sum + t.amount, 0);
+  
+  return {
+    dollarLine: `${formatNum(incomeDollar)} $ / ${formatNum(expenseDollar)} $`,
+    somLine: `${formatNum(incomeSom)} сом / ${formatNum(expenseSom)} сом`
+  };
+});
+
+const cargoTotals = computed(() => {
+  if (!cargoItems.value.length) return 'Нет данных';
+  const totalKg = cargoItems.value.reduce((sum, c) => sum + c.weight, 0);
+  const count = cargoItems.value.length;
+  return `${formatNum(totalKg)} кг / ${formatNum(count)} шт`;
+});
+
+const varzobTotals = computed(() => {
+  if (!varzobExpenses.value.length) return 'Нет данных';
+  const totalSom = varzobExpenses.value
+    .filter(e => e.currency === 'сом')
+    .reduce((sum, e) => sum + e.amount, 0);
+  const totalDollar = varzobExpenses.value
+    .filter(e => e.currency === '$')
+    .reduce((sum, e) => sum + e.amount, 0);
+  return `${formatNum(totalSom)} сом / ${formatNum(totalDollar)} $`;
+});
+
+const capsuleTotals = computed(() => {
+  if (!capsuleItems.value.length) return 'Нет данных';
+  const total = capsuleItems.value.reduce((sum, item) => sum + item.quantity, 0);
+  return `${formatNum(total)} шт`;
+});
+
+const cupTotals = computed(() => {
+  if (!cupItems.value.length) return 'Нет данных';
+  const total = cupItems.value.reduce((sum, item) => sum + item.quantity, 0);
+  return `${formatNum(total)} шт`;
+});
+
+const warehouseTotals = computed(() => {
+  if (!warehouseItems.value.length) return 'Нет данных';
+  const total = warehouseItems.value.reduce((sum, i) => sum + i.quantity, 0);
+  return `${formatNum(total)} шт`;
+});
+
+const factoryTotals = computed(() => {
+  if (!factoryItems.value.length) return 'Нет данных';
+  const totalKg = factoryItems.value
+    .filter(i => i.unit === 'кг')
+    .reduce((sum, i) => sum + i.quantity, 0);
+  const totalPcs = factoryItems.value
+    .filter(i => i.unit === 'шт')
+    .reduce((sum, i) => sum + i.quantity, 0);
+  return `${formatNum(totalKg)} кг / ${formatNum(totalPcs)} шт`;
+});
+
+const debtsTotals = computed(() => {
+  if (!debts.value.length) return 'Нет данных';
+  const totalSom = debts.value
+    .filter(d => d.currency === 'сом')
+    .reduce((sum, d) => sum + d.remainingAmount, 0);
+  const totalDollar = debts.value
+    .filter(d => d.currency === '$')
+    .reduce((sum, d) => sum + d.remainingAmount, 0);
+  return `${formatNum(totalSom)} сом / ${formatNum(totalDollar)} $`;
+});
 
 const MENU_VISIBILITY_KEY = "finsoft_menu_visibility";
 const MENU_VISIBILITY_EVENT = "menu-visibility-changed";
@@ -472,8 +572,8 @@ const handleVisibilityEvent = (event: Event) => {
   }
 };
 
-const handleLogout = () => {
-  logout();
+const handleLogout = async () => {
+  await logout();
   router.push("/login");
 };
 
@@ -489,6 +589,15 @@ onMounted(() => {
   if (typeof window !== "undefined") {
     window.addEventListener(MENU_VISIBILITY_EVENT, handleVisibilityEvent);
   }
+  
+  expensesStore.fetchTransactions();
+  expensesStore.fetchVarzobExpenses();
+  debtsStore.fetchDebts();
+  warehouseStore.fetchItems();
+  warehouseStore.fetchFactoryItems();
+  workshopsStore.fetchCargo();
+  workshopsStore.fetchCapsuleItems();
+  workshopsStore.fetchCupItems();
 });
 
 onUnmounted(() => {

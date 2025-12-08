@@ -2,9 +2,10 @@
   <DataTable
     title="Китайские грузы"
     description="Управление китайскими грузами"
-    :headers="['Дата', 'Название груза', 'Количество', 'Вес (кг)', 'Статус']"
+    :headers="['Дата', 'Название груза', 'Вес (кг)', 'Статус']"
     :data="tableData"
     :is-manager-view="isManagerView"
+    :status-options="statusOptions"
     @add="handleAdd"
     @edit="handleEdit"
     @delete="handleDelete"
@@ -12,132 +13,110 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed, onMounted } from "vue";
 import DataTable from "../components/DataTable.vue";
 import { getCurrentRole } from "../stores/auth";
+import { useWorkshopsStore } from "../stores/workshops";
+import { storeToRefs } from "pinia";
+import { CargoStatus, Currency } from "../types";
 
-const tableData = ref([
-  {
-    Дата: "2025-11-15",
-    "Название груза": "Фолгаи сметан",
-    Количество: "700 шт",
-    "Вес (кг)": "350",
-    Статус: "Заказано в Китае",
-  },
-  {
-    Дата: "2025-11-14",
-    "Название груза": "Фолгаи кефир",
-    Количество: "600 шт",
-    "Вес (кг)": "300",
-    Статус: "Заказано в Китае",
-  },
-  {
-    Дата: "2025-11-13",
-    "Название груза": "Фолгаи каймок",
-    Количество: "900 шт",
-    "Вес (кг)": "450",
-    Статус: "Принято в Душанбе",
-  },
-  {
-    Дата: "2025-11-12",
-    "Название груза": "Фолгаи чургот",
-    Количество: "400 шт",
-    "Вес (кг)": "200",
-    Статус: "Заказано в Китае",
-  },
-  {
-    Дата: "2025-11-11",
-    "Название груза": "Юбкаи шир",
-    Количество: "550 шт",
-    "Вес (кг)": "275",
-    Статус: "Заказано в Китае",
-  },
-  {
-    Дата: "2025-11-10",
-    "Название груза": "Юбкаи кефир",
-    Количество: "500 шт",
-    "Вес (кг)": "250",
-    Статус: "Заказано в Китае",
-  },
-  {
-    Дата: "2025-11-09",
-    "Название груза": "Юбкаи сметан",
-    Количество: "300 шт",
-    "Вес (кг)": "150",
-    Статус: "Заказано в Китае",
-  },
-  {
-    Дата: "2025-11-08",
-    "Название груза": "Юбкаи йогурт",
-    Количество: "750 шт",
-    "Вес (кг)": "375",
-    Статус: "Принято в Душанбе",
-  },
-  {
-    Дата: "2025-11-07",
-    "Название груза": "Фолгаи сметан",
-    Количество: "200 шт",
-    "Вес (кг)": "100",
-    Статус: "Заказано в Китае",
-  },
-  {
-    Дата: "2025-11-06",
-    "Название груза": "Фолгаи сметан",
-    Количество: "600 шт",
-    "Вес (кг)": "300",
-    Статус: "Заказано в Китае",
-  },
-  {
-    Дата: "2025-11-05",
-    "Название груза": "Фолгаи сметан",
-    Количество: "400 шт",
-    "Вес (кг)": "200",
-    Статус: "Заказано в Китае",
-  },
-  {
-    Дата: "2025-11-04",
-    "Название груза": "Фолгаи сметан",
-    Количество: "550 шт",
-    "Вес (кг)": "275",
-    Статус: "Принято в Душанбе",
-  },
-  {
-    Дата: "2025-11-03",
-    "Название груза": "Фолгаи сметан",
-    Количество: "450 шт",
-    "Вес (кг)": "225",
-    Статус: "Заказано в Китае",
-  },
-  {
-    Дата: "2025-11-02",
-    "Название груза": "Фолгаи сметан",
-    Количество: "800 шт",
-    "Вес (кг)": "400",
-    Статус: "Заказано в Китае",
-  },
-  {
-    Дата: "2025-11-01",
-    "Название груза": "Фолгаи сметан",
-    Количество: "350 шт",
-    "Вес (кг)": "175",
-    Статус: "Заказано в Китае",
-  },
-]);
+const workshopsStore = useWorkshopsStore();
+const { cargoItems } = storeToRefs(workshopsStore);
+
+const statusOptions = ["Незаказано", "Заказано в Китае", "Принято в Душанбе"];
+
+const tableData = computed(() => {
+  return cargoItems.value.map((item) => ({
+    id: item.id,
+    Дата: item.date,
+    "Название груза": item.name,
+    "Вес (кг)": `${item.weight} ${item.unit}`,
+    Статус: item.status,
+    original: item,
+  }));
+});
 
 const isManagerView = computed(() => getCurrentRole() === "manager");
 
-const handleAdd = () => {
-  alert("Функция добавления: откроется форма для добавления нового груза");
+onMounted(() => {
+  workshopsStore.fetchCargo();
+});
+
+const parseWeight = (value: string) => {
+  if (!value) return { weight: 0, unit: 'кг' };
+  
+  const trimmed = value.trim();
+  const parts = trimmed.split(' ');
+  const firstPart = parts[0] ?? '0';
+  const weight = parseFloat(firstPart.replace(',', '.')) || 0;
+  const unit = parts[1] || 'кг';
+  
+  return { weight, unit };
 };
 
-const handleEdit = (row: Record<string, any>) => {
-  alert(`Редактирование: ${JSON.stringify(row)}`);
+const handleAdd = async (data: Record<string, any>) => {
+  try {
+    const { weight, unit } = parseWeight(data['Вес (кг)'] || '');
+    
+    if (!data['Дата'] || !data['Название груза']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await workshopsStore.createCargo({
+      date: data['Дата'],
+      name: data['Название груза'],
+      weight,
+      unit,
+      status: (data['Статус'] as CargoStatus) || 'Заказано в Китае',
+      trackingNumber: '',
+      supplier: '',
+      cost: 0,
+      currency: Currency.USD,
+      note: ''
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при создании");
+  }
 };
 
-const handleDelete = (row: Record<string, any>) => {
-  const index = tableData.value.findIndex((item) => item === row);
-  if (index > -1) {
-    tableData.value.splice(index, 1);
+const handleEdit = async (data: Record<string, any>) => {
+  try {
+    const { weight, unit } = parseWeight(data['Вес (кг)'] || '');
+    const id = data.original?.id || data.id;
+    
+    if (!id) {
+      alert('Ошибка: ID записи не найден');
+      return;
+    }
+    
+    if (!data['Дата'] || !data['Название груза']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await workshopsStore.updateCargo(id, {
+      date: data['Дата'],
+      name: data['Название груза'],
+      weight,
+      unit,
+      status: (data['Статус'] as CargoStatus) || 'Заказано в Китае',
+      trackingNumber: data.original?.trackingNumber || '',
+      supplier: data.original?.supplier || '',
+      cost: data.original?.cost || 0,
+      currency: data.original?.currency || Currency.USD,
+      note: data.original?.note || ''
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при обновлении");
+  }
+};
+
+const handleDelete = async (row: Record<string, any>) => {
+  try {
+    await workshopsStore.deleteCargo(row.original.id);
+  } catch {
+    alert("Ошибка при удалении");
   }
 };
 </script>

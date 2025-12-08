@@ -3,13 +3,19 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import logoUrl from "../assets/finsoft-logo.svg";
 import { login, type LoginResult } from "../stores/auth";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
 
 const router = useRouter();
 
-const email = ref("admin");
-const password = ref("admin");
+const username = ref("");
+const password = ref("");
+const showPassword = ref(false);
 const isSubmitting = ref(false);
 const errorMessage = ref<string | null>(null);
+
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value;
+};
 
 const handleLogin = async () => {
   if (isSubmitting.value) {
@@ -18,7 +24,7 @@ const handleLogin = async () => {
   errorMessage.value = null;
   isSubmitting.value = true;
 
-  const result: LoginResult = await login(email.value, password.value);
+  const result: LoginResult = await login(username.value, password.value);
   isSubmitting.value = false;
 
   if (!result.success || !result.user) {
@@ -57,7 +63,7 @@ const handleLogin = async () => {
             >
             <div class="mt-2">
               <input
-                v-model="email"
+                v-model="username"
                 type="text"
                 name="login"
                 id="login"
@@ -75,17 +81,25 @@ const handleLogin = async () => {
               class="block text-sm/6 font-medium text-gray-900"
               >Пароль</label
             >
-            <div class="mt-2">
+            <div class="mt-2 relative">
               <input
                 v-model="password"
-                type="password"
+                :type="showPassword ? 'text' : 'password'"
                 name="password"
                 id="password"
                 autocomplete="current-password"
                 required
                 placeholder="Введите ваш пароль"
-                class="block w-full items-center w-full h-12 rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                class="block w-full items-center w-full h-12 rounded-md bg-white px-3 pr-10 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
               />
+              <button
+                type="button"
+                @click="togglePasswordVisibility"
+                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+              >
+                <EyeSlashIcon v-if="showPassword" class="h-5 w-5" />
+                <EyeIcon v-else class="h-5 w-5" />
+              </button>
             </div>
           </div>
 
@@ -127,10 +141,10 @@ const handleLogin = async () => {
             </div>
 
             <div class="text-sm/6">
-              <a
-                href="#"
+              <RouterLink
+                to="/forgot-password"
                 class="font-semibold text-indigo-600 hover:text-indigo-500"
-                >Забыл пароль?</a
+                >Забыл пароль?</RouterLink
               >
             </div>
           </div>

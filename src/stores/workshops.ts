@@ -3,12 +3,7 @@ import { ref, computed } from 'vue';
 import type { ChineseCargo, WorkshopItem, FilterParams, ApiError } from '../types';
 import { cargoService, workshopService } from '../services';
 
-/**
- * Workshops Store
- * Manages workshop production and Chinese cargo
- */
 export const useWorkshopsStore = defineStore('workshops', () => {
-    // State
     const cargoItems = ref<ChineseCargo[]>([]);
     const workshopItems = ref<WorkshopItem[]>([]);
     const currentCargo = ref<ChineseCargo | null>(null);
@@ -20,7 +15,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
     const perPage = ref(10);
     const totalItems = ref(0);
 
-    // Getters
     const orderedCargo = computed(() =>
         cargoItems.value.filter(item => item.status === 'Заказано в Китае')
     );
@@ -49,7 +43,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
         cupItems.value.reduce((sum, item) => sum + item.quantity, 0)
     );
 
-    // Cargo Actions
     async function fetchCargo(params?: FilterParams) {
         loading.value = true;
         error.value = null;
@@ -66,7 +59,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to fetch cargo:', err);
         } finally {
             loading.value = false;
         }
@@ -85,7 +77,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to create cargo:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -108,7 +99,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to update cargo:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -127,14 +117,12 @@ export const useWorkshopsStore = defineStore('workshops', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to delete cargo:', err);
             throw err;
         } finally {
             loading.value = false;
         }
     }
 
-    // Workshop Actions
     async function fetchWorkshopItems(params?: FilterParams) {
         loading.value = true;
         error.value = null;
@@ -147,7 +135,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to fetch workshop items:', err);
         } finally {
             loading.value = false;
         }
@@ -162,7 +149,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
 
             if (response.success && response.data) {
                 const capsuleData = response.data.data;
-                // Update only capsule items in the main array
                 workshopItems.value = [
                     ...workshopItems.value.filter(item => item.workshopType !== 'capsule'),
                     ...capsuleData
@@ -170,7 +156,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to fetch capsule items:', err);
         } finally {
             loading.value = false;
         }
@@ -185,7 +170,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
 
             if (response.success && response.data) {
                 const cupData = response.data.data;
-                // Update only cup items in the main array
                 workshopItems.value = [
                     ...workshopItems.value.filter(item => item.workshopType !== 'cup'),
                     ...cupData
@@ -193,7 +177,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to fetch cup items:', err);
         } finally {
             loading.value = false;
         }
@@ -212,7 +195,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to create workshop item:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -235,7 +217,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to update workshop item:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -254,7 +235,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to delete workshop item:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -279,7 +259,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
     }
 
     return {
-        // State
         cargoItems,
         workshopItems,
         currentCargo,
@@ -290,8 +269,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
         currentPage,
         perPage,
         totalItems,
-
-        // Getters
         orderedCargo,
         receivedCargo,
         capsuleItems,
@@ -299,8 +276,6 @@ export const useWorkshopsStore = defineStore('workshops', () => {
         totalCargoWeight,
         totalCapsuleProduction,
         totalCupProduction,
-
-        // Actions
         fetchCargo,
         createCargo,
         updateCargo,

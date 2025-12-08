@@ -12,102 +12,102 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed, onMounted } from "vue";
 import DataTable from "../components/DataTable.vue";
 import { getCurrentRole } from "../stores/auth";
+import { useWorkshopsStore } from "../stores/workshops";
+import { storeToRefs } from "pinia";
 
-const tableData = ref([
-  {
-    Дата: "2025-11-15",
-    "Название продукта": "Капсула Энергия",
-    Количество: "1,300 шт",
-  },
-  {
-    Дата: "2025-11-14",
-    "Название продукта": "Капсула Витамин",
-    Количество: "1,150 шт",
-  },
-  {
-    Дата: "2025-11-13",
-    "Название продукта": "Капсула Иммунитет",
-    Количество: "1,250 шт",
-  },
-  {
-    Дата: "2025-11-12",
-    "Название продукта": "Капсула Баланс",
-    Количество: "920 шт",
-  },
-  {
-    Дата: "2025-11-11",
-    "Название продукта": "Капсула Форте",
-    Количество: "1,450 шт",
-  },
-  {
-    Дата: "2025-11-10",
-    "Название продукта": "Капсула Ультра",
-    Количество: "1,300 шт",
-  },
-  {
-    Дата: "2025-11-09",
-    "Название продукта": "Капсула Фреш",
-    Количество: "950 шт",
-  },
-  {
-    Дата: "2025-11-08",
-    "Название продукта": "Капсула Комфорт",
-    Количество: "1,100 шт",
-  },
-  {
-    Дата: "2025-11-07",
-    "Название продукта": "Капсула Детокс",
-    Количество: "800 шт",
-  },
-  {
-    Дата: "2025-11-06",
-    "Название продукта": "Капсула Ночь",
-    Количество: "1,050 шт",
-  },
-  {
-    Дата: "2025-11-05",
-    "Название продукта": "Капсула Утро",
-    Количество: "900 шт",
-  },
-  {
-    Дата: "2025-11-04",
-    "Название продукта": "Капсула Спорт",
-    Количество: "1,200 шт",
-  },
-  {
-    Дата: "2025-11-03",
-    "Название продукта": "Капсула Спокойствие",
-    Количество: "750 шт",
-  },
-  {
-    Дата: "2025-11-02",
-    "Название продукта": "Капсула Импульс",
-    Количество: "1,400 шт",
-  },
-  {
-    Дата: "2025-11-01",
-    "Название продукта": "Капсула Гармония",
-    Количество: "1,000 шт",
-  },
-]);
+const workshopsStore = useWorkshopsStore();
+const { capsuleItems } = storeToRefs(workshopsStore);
+
+const tableData = computed(() => {
+  return capsuleItems.value.map((item) => ({
+    id: item.id,
+    Дата: item.date,
+    "Название продукта": item.productName,
+    Количество: `${item.quantity} ${item.unit}`,
+    original: item,
+  }));
+});
 
 const isManagerView = computed(() => getCurrentRole() === "manager");
 
-const handleAdd = () => {
-  alert("Функция добавления: откроется форма для добавления новой партии");
+onMounted(() => {
+  workshopsStore.fetchCapsuleItems();
+});
+
+const parseQuantity = (value: string) => {
+  if (!value) return { quantity: 0, unit: 'шт' };
+  
+  const trimmed = value.trim();
+  const parts = trimmed.split(' ');
+  const firstPart = parts[0] ?? '0';
+  const quantity = parseFloat(firstPart.replace(',', '.')) || 0;
+  const unit = parts[1] || 'шт';
+  
+  return { quantity, unit };
 };
 
-const handleEdit = (row: Record<string, any>) => {
-  alert(`Редактирование: ${JSON.stringify(row)}`);
+const handleAdd = async (data: Record<string, any>) => {
+  try {
+    const { quantity, unit } = parseQuantity(data['Количество'] || '');
+    
+    if (!data['Дата'] || !data['Название продукта']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await workshopsStore.createWorkshopItem({
+      date: data['Дата'],
+      productName: data['Название продукта'],
+      quantity,
+      unit,
+      workshopType: 'capsule',
+      shift: 'day',
+      operator: '',
+      note: ''
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при создании");
+  }
 };
 
-const handleDelete = (row: Record<string, any>) => {
-  const index = tableData.value.findIndex((item) => item === row);
-  if (index > -1) {
-    tableData.value.splice(index, 1);
+const handleEdit = async (data: Record<string, any>) => {
+  try {
+    const { quantity, unit } = parseQuantity(data['Количество'] || '');
+    const id = data.original?.id || data.id;
+    
+    if (!id) {
+      alert('Ошибка: ID записи не найден');
+      return;
+    }
+    
+    if (!data['Дата'] || !data['Название продукта']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await workshopsStore.updateWorkshopItem(id, {
+      date: data['Дата'],
+      productName: data['Название продукта'],
+      quantity,
+      unit,
+      workshopType: 'capsule',
+      shift: data.original?.shift || 'day',
+      operator: data.original?.operator || '',
+      note: data.original?.note || ''
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при обновлении");
+  }
+};
+
+const handleDelete = async (row: Record<string, any>) => {
+  try {
+    await workshopsStore.deleteWorkshopItem(row.original.id);
+  } catch {
+    alert("Ошибка при удалении");
   }
 };
 </script>

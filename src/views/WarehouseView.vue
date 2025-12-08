@@ -12,89 +12,98 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed, onMounted } from "vue";
 import DataTable from "../components/DataTable.vue";
 import { getCurrentRole } from "../stores/auth";
+import { useWarehouseStore } from "../stores/warehouse";
+import { storeToRefs } from "pinia";
+import type { WarehouseLocation } from "../types";
 
-const tableData = ref([
-  {
-    Дата: "2025-11-20",
-    "Название товара": "Готовые капсулы №12",
-    Количество: "1 200 шт",
-    Расположение: "Цех • Линия 1",
-  },
-  {
-    Дата: "2025-11-19",
-    "Название товара": "Форма для стаканов",
-    Количество: "6 шт",
-    Расположение: "Цех • Участок прессовки",
-  },
-  {
-    Дата: "2025-11-18",
-    "Название товара": "Пищевой краситель",
-    Количество: "45 кг",
-    Расположение: "Цех • Химия",
-  },
-  {
-    Дата: "2025-11-17",
-    "Название товара": "Желатиновая смесь",
-    Количество: "320 кг",
-    Расположение: "Цех • Сырьевая",
-  },
-  {
-    Дата: "2025-11-16",
-    "Название товара": "Фольга для блистеров",
-    Количество: "9 шт",
-    Расположение: "Цех • Пакетирование",
-  },
-  {
-    Дата: "2025-11-15",
-    "Название товара": "Контрольные датчики",
-    Количество: "14 шт",
-    Расположение: "Цех • Сервисная",
-  },
-  {
-    Дата: "2025-11-14",
-    "Название товара": "Полиэтиленовые пакеты",
-    Количество: "4 000 шт",
-    Расположение: "Цех • Упаковка",
-  },
-  {
-    Дата: "2025-11-13",
-    "Название товара": "Сменные фильтры",
-    Количество: "18 шт",
-    Расположение: "Цех • Вентиляция",
-  },
-  {
-    Дата: "2025-11-12",
-    "Название товара": "Стеклянные пипетки",
-    Количество: "350 шт",
-    Расположение: "Цех • Качество",
-  },
-  {
-    Дата: "2025-11-11",
-    "Название товара": "Резервные контейнеры",
-    Количество: "75 шт",
-    Расположение: "Цех • Склад готовой",
-  },
-]);
+const warehouseStore = useWarehouseStore();
+const { items } = storeToRefs(warehouseStore);
+
+const tableData = computed(() => {
+  return items.value.map((item) => ({
+    id: item.id,
+    Дата: item.date,
+    "Название товара": item.name,
+    Количество: `${item.quantity} ${item.unit}`,
+    Расположение: item.location,
+    original: item,
+  }));
+});
 
 const isManagerView = computed(() => getCurrentRole() === "manager");
 
-const handleAdd = () => {
-  alert(
-    "Функция добавления: откроется форма для добавления нового товара на склад"
-  );
+onMounted(() => {
+  warehouseStore.fetchItems();
+});
+
+const parseQuantity = (value: string) => {
+  if (!value) return { quantity: 0, unit: 'шт' };
+  
+  const trimmed = value.trim();
+  const parts = trimmed.split(' ');
+  const firstPart = parts[0] ?? '0';
+  const quantity = parseFloat(firstPart.replace(',', '.')) || 0;
+  const unit = parts[1] || 'шт';
+  
+  return { quantity, unit };
 };
 
-const handleEdit = (row: Record<string, any>) => {
-  alert(`Редактирование: ${JSON.stringify(row)}`);
+const handleAdd = async (data: Record<string, any>) => {
+  try {
+    const { quantity, unit } = parseQuantity(data['Количество'] || '');
+    
+    if (!data['Дата'] || !data['Название товара']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await warehouseStore.createItem({
+      date: data['Дата'],
+      name: data['Название товара'],
+      quantity,
+      unit,
+      location: (data['Расположение'] as WarehouseLocation) || 'Склад Капсула'
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при создании");
+  }
 };
 
-const handleDelete = (row: Record<string, any>) => {
-  const index = tableData.value.findIndex((item) => item === row);
-  if (index > -1) {
-    tableData.value.splice(index, 1);
+const handleEdit = async (data: Record<string, any>) => {
+  try {
+    const { quantity, unit } = parseQuantity(data['Количество'] || '');
+    const id = data.original?.id || data.id;
+    
+    if (!id) {
+      alert('Ошибка: ID записи не найден');
+      return;
+    }
+    
+    if (!data['Дата'] || !data['Название товара']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await warehouseStore.updateItem(id, {
+      date: data['Дата'],
+      name: data['Название товара'],
+      quantity,
+      unit,
+      location: (data['Расположение'] as WarehouseLocation) || data.original?.location || 'Склад Капсула'
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при обновлении");
+  }
+};
+
+const handleDelete = async (row: Record<string, any>) => {
+  try {
+    await warehouseStore.deleteItem(row.original.id);
+  } catch {
+    alert("Ошибка при удалении");
   }
 };
 </script>

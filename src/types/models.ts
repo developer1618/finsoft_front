@@ -1,17 +1,11 @@
 import type { UserRole, DebtStatus, CargoStatus, PaymentMethod, Currency, TransactionType, WarehouseLocation } from './enums';
 
-/**
- * Base model interface with common fields
- */
 export interface BaseModel {
     id: string;
     createdAt?: string;
     updatedAt?: string;
 }
 
-/**
- * User model
- */
 export interface User extends BaseModel {
     email: string;
     firstName: string;
@@ -20,17 +14,11 @@ export interface User extends BaseModel {
     avatar?: string;
 }
 
-/**
- * Authentication user (includes token)
- */
 export interface AuthUser extends User {
     token?: string;
     refreshToken?: string;
 }
 
-/**
- * Payment entry for debt history
- */
 export interface PaymentEntry {
     id: string;
     date: string;
@@ -40,9 +28,6 @@ export interface PaymentEntry {
     note?: string;
 }
 
-/**
- * Debt record model
- */
 export interface Debt extends BaseModel {
     date: string;
     client: string;
@@ -55,9 +40,6 @@ export interface Debt extends BaseModel {
     note?: string;
 }
 
-/**
- * Warehouse item model
- */
 export interface WarehouseItem extends BaseModel {
     date: string;
     name: string;
@@ -70,9 +52,6 @@ export interface WarehouseItem extends BaseModel {
     note?: string;
 }
 
-/**
- * Income/Expense transaction model
- */
 export interface Transaction extends BaseModel {
     date: string;
     type: TransactionType;
@@ -84,9 +63,6 @@ export interface Transaction extends BaseModel {
     recipient?: string;
 }
 
-/**
- * Chinese cargo model
- */
 export interface ChineseCargo extends BaseModel {
     date: string;
     name: string;
@@ -100,9 +76,6 @@ export interface ChineseCargo extends BaseModel {
     note?: string;
 }
 
-/**
- * Workshop production item
- */
 export interface WorkshopItem extends BaseModel {
     date: string;
     productName: string;
@@ -114,9 +87,6 @@ export interface WorkshopItem extends BaseModel {
     note?: string;
 }
 
-/**
- * Varzob expense model
- */
 export interface VarzobExpense extends BaseModel {
     date: string;
     category: string;
@@ -127,9 +97,6 @@ export interface VarzobExpense extends BaseModel {
     paymentMethod?: PaymentMethod;
 }
 
-/**
- * Dashboard statistics
- */
 export interface DashboardStats {
     totalIncome: number;
     totalExpense: number;
@@ -140,9 +107,6 @@ export interface DashboardStats {
     cupProduction: number;
 }
 
-/**
- * Menu visibility settings
- */
 export interface MenuVisibility {
     dashboard: boolean;
     'income-expense': boolean;

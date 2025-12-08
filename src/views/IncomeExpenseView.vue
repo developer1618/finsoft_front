@@ -12,117 +12,105 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed, onMounted } from "vue";
 import DataTable from "../components/DataTable.vue";
 import { getCurrentRole } from "../stores/auth";
+import { useExpensesStore } from "../stores/expenses";
+import { storeToRefs } from "pinia";
+import type { TransactionType, Currency } from "../types";
 
-const tableData = ref([
-  {
-    Дата: "2025-11-15",
-    Описание: "Продажа товара",
-    Тип: "Доход",
-    Сумма: "$7,500",
-  },
-  {
-    Дата: "2025-11-14",
-    Описание: "Закупка комплектующих",
-    Тип: "Расход",
-    Сумма: "$3,200",
-  },
-  {
-    Дата: "2025-11-13",
-    Описание: "Бонусы сотрудникам",
-    Тип: "Расход",
-    Сумма: "$2,000",
-  },
-  {
-    Дата: "2025-11-12",
-    Описание: "Поступление платежа",
-    Тип: "Доход",
-    Сумма: "$4,100",
-  },
-  {
-    Дата: "2025-11-11",
-    Описание: "Транспортировка грузов",
-    Тип: "Расход",
-    Сумма: "$850",
-  },
-  {
-    Дата: "2025-11-10",
-    Описание: "Продажа товара",
-    Тип: "Доход",
-    Сумма: "$5,250",
-  },
-  {
-    Дата: "2025-11-09",
-    Описание: "Закупка материалов",
-    Тип: "Расход",
-    Сумма: "$2,100",
-  },
-  {
-    Дата: "2025-11-08",
-    Описание: "Зарплата сотрудникам",
-    Тип: "Расход",
-    Сумма: "$8,500",
-  },
-  {
-    Дата: "2025-11-07",
-    Описание: "Доход от услуг",
-    Тип: "Доход",
-    Сумма: "$3,750",
-  },
-  {
-    Дата: "2025-11-06",
-    Описание: "Коммунальные услуги",
-    Тип: "Расход",
-    Сумма: "$450",
-  },
-  {
-    Дата: "2025-11-05",
-    Описание: "Консультационные услуги",
-    Тип: "Доход",
-    Сумма: "$1,200",
-  },
-  {
-    Дата: "2025-11-04",
-    Описание: "Аренда офиса",
-    Тип: "Расход",
-    Сумма: "$3,000",
-  },
-  {
-    Дата: "2025-11-03",
-    Описание: "Продажа оборудования",
-    Тип: "Доход",
-    Сумма: "$6,800",
-  },
-  {
-    Дата: "2025-11-02",
-    Описание: "Страховка",
-    Тип: "Расход",
-    Сумма: "$1,500",
-  },
-  {
-    Дата: "2025-11-01",
-    Описание: "Финальная продажа",
-    Тип: "Доход",
-    Сумма: "$9,200",
-  },
-]);
+const expensesStore = useExpensesStore();
+const { transactions } = storeToRefs(expensesStore);
+
+const formatAmount = (value: number, currency: string): string =>
+  `${value.toLocaleString("ru-RU")} ${currency}`;
+
+const tableData = computed(() => {
+  return transactions.value.map((t) => ({
+    id: t.id,
+    Дата: t.date,
+    Описание: t.description,
+    Тип: t.type,
+    Сумма: formatAmount(t.amount, t.currency),
+    original: t,
+  }));
+});
 
 const isManagerView = computed(() => getCurrentRole() === "manager");
 
-const handleAdd = () => {
-  alert("Функция добавления: откроется форма для добавления новой записи");
+onMounted(() => {
+  expensesStore.fetchTransactions();
+});
+
+const parseAmount = (value: string) => {
+  if (!value) return { amount: 0, currency: 'сом' as Currency };
+  
+  const trimmed = value.trim();
+  const isDollar = trimmed.startsWith('$');
+  const currency = isDollar ? '$' : 'сом';
+  const amountStr = trimmed.replace(/[^\d.,]/g, '').replace(',', '.');
+  
+  return {
+    amount: parseFloat(amountStr) || 0,
+    currency: currency as Currency
+  };
 };
 
-const handleEdit = (row: Record<string, any>) => {
-  alert(`Редактирование: ${JSON.stringify(row)}`);
+const handleAdd = async (data: Record<string, any>) => {
+  try {
+    const { amount, currency } = parseAmount(data['Сумма'] || '');
+    
+    if (!data['Дата'] || !data['Описание'] || !data['Тип']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await expensesStore.createTransaction({
+      date: data['Дата'],
+      description: data['Описание'],
+      type: data['Тип'] as TransactionType,
+      amount,
+      currency,
+      category: 'Разное'
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при создании");
+  }
 };
 
-const handleDelete = (row: Record<string, any>) => {
-  const index = tableData.value.findIndex((item) => item === row);
-  if (index > -1) {
-    tableData.value.splice(index, 1);
+const handleEdit = async (data: Record<string, any>) => {
+  try {
+    const { amount, currency } = parseAmount(data['Сумма'] || '');
+    const id = data.original?.id || data.id;
+    
+    if (!id) {
+      alert('Ошибка: ID записи не найден');
+      return;
+    }
+    
+    if (!data['Дата'] || !data['Описание'] || !data['Тип']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await expensesStore.updateTransaction(id, {
+      date: data['Дата'],
+      description: data['Описание'],
+      type: data['Тип'] as TransactionType,
+      amount,
+      currency,
+      category: 'Разное'
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при обновлении");
+  }
+};
+
+const handleDelete = async (row: Record<string, any>) => {
+  try {
+    await expensesStore.deleteTransaction(row.original.id);
+  } catch {
+    alert("Ошибка при удалении");
   }
 };
 </script>

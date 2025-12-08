@@ -12,102 +12,102 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed, onMounted } from "vue";
 import DataTable from "../components/DataTable.vue";
 import { getCurrentRole } from "../stores/auth";
+import { useWorkshopsStore } from "../stores/workshops";
+import { storeToRefs } from "pinia";
 
-const tableData = ref([
-  {
-    Дата: "2025-11-15",
-    "Название продукта": "Стакан Премиум",
-    Количество: "2,000 шт",
-  },
-  {
-    Дата: "2025-11-14",
-    "Название продукта": "Стакан Классик",
-    Количество: "2,450 шт",
-  },
-  {
-    Дата: "2025-11-13",
-    "Название продукта": "Стакан Лайт",
-    Количество: "2,900 шт",
-  },
-  {
-    Дата: "2025-11-12",
-    "Название продукта": "Стакан Кофе",
-    Количество: "2,050 шт",
-  },
-  {
-    Дата: "2025-11-11",
-    "Название продукта": "Стакан Мокко",
-    Количество: "2,750 шт",
-  },
-  {
-    Дата: "2025-11-10",
-    "Название продукта": "Стакан Ваниль",
-    Количество: "2,100 шт",
-  },
-  {
-    Дата: "2025-11-09",
-    "Название продукта": "Стакан Шоколад",
-    Количество: "2,600 шт",
-  },
-  {
-    Дата: "2025-11-08",
-    "Название продукта": "Стакан Фисташка",
-    Количество: "2,300 шт",
-  },
-  {
-    Дата: "2025-11-07",
-    "Название продукта": "Стакан Карамель",
-    Количество: "1,800 шт",
-  },
-  {
-    Дата: "2025-11-06",
-    "Название продукта": "Стакан Миндаль",
-    Количество: "2,550 шт",
-  },
-  {
-    Дата: "2025-11-05",
-    "Название продукта": "Стакан Тропик",
-    Количество: "2,200 шт",
-  },
-  {
-    Дата: "2025-11-04",
-    "Название продукта": "Стакан Бисквит",
-    Количество: "2,700 шт",
-  },
-  {
-    Дата: "2025-11-03",
-    "Название продукта": "Стакан Матча",
-    Количество: "1,950 шт",
-  },
-  {
-    Дата: "2025-11-02",
-    "Название продукта": "Стакан Ягода",
-    Количество: "2,850 шт",
-  },
-  {
-    Дата: "2025-11-01",
-    "Название продукта": "Стакан Айс",
-    Количество: "2,400 шт",
-  },
-]);
+const workshopsStore = useWorkshopsStore();
+const { cupItems } = storeToRefs(workshopsStore);
+
+const tableData = computed(() => {
+  return cupItems.value.map((item) => ({
+    id: item.id,
+    Дата: item.date,
+    "Название продукта": item.productName,
+    Количество: `${item.quantity} ${item.unit}`,
+    original: item,
+  }));
+});
 
 const isManagerView = computed(() => getCurrentRole() === "manager");
 
-const handleAdd = () => {
-  alert("Функция добавления: откроется форма для добавления новой партии");
+onMounted(() => {
+  workshopsStore.fetchCupItems();
+});
+
+const parseQuantity = (value: string) => {
+  if (!value) return { quantity: 0, unit: 'шт' };
+  
+  const trimmed = value.trim();
+  const parts = trimmed.split(' ');
+  const firstPart = parts[0] ?? '0';
+  const quantity = parseFloat(firstPart.replace(',', '.')) || 0;
+  const unit = parts[1] || 'шт';
+  
+  return { quantity, unit };
 };
 
-const handleEdit = (row: Record<string, any>) => {
-  alert(`Редактирование: ${JSON.stringify(row)}`);
+const handleAdd = async (data: Record<string, any>) => {
+  try {
+    const { quantity, unit } = parseQuantity(data['Количество'] || '');
+    
+    if (!data['Дата'] || !data['Название продукта']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await workshopsStore.createWorkshopItem({
+      date: data['Дата'],
+      productName: data['Название продукта'],
+      quantity,
+      unit,
+      workshopType: 'cup',
+      shift: 'day',
+      operator: '',
+      note: ''
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при создании");
+  }
 };
 
-const handleDelete = (row: Record<string, any>) => {
-  const index = tableData.value.findIndex((item) => item === row);
-  if (index > -1) {
-    tableData.value.splice(index, 1);
+const handleEdit = async (data: Record<string, any>) => {
+  try {
+    const { quantity, unit } = parseQuantity(data['Количество'] || '');
+    const id = data.original?.id || data.id;
+    
+    if (!id) {
+      alert('Ошибка: ID записи не найден');
+      return;
+    }
+    
+    if (!data['Дата'] || !data['Название продукта']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await workshopsStore.updateWorkshopItem(id, {
+      date: data['Дата'],
+      productName: data['Название продукта'],
+      quantity,
+      unit,
+      workshopType: 'cup',
+      shift: data.original?.shift || 'day',
+      operator: data.original?.operator || '',
+      note: data.original?.note || ''
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при обновлении");
+  }
+};
+
+const handleDelete = async (row: Record<string, any>) => {
+  try {
+    await workshopsStore.deleteWorkshopItem(row.original.id);
+  } catch {
+    alert("Ошибка при удалении");
   }
 };
 </script>

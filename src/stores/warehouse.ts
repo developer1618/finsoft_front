@@ -3,12 +3,7 @@ import { ref, computed } from 'vue';
 import type { WarehouseItem, FilterParams, ApiError } from '../types';
 import { warehouseService } from '../services';
 
-/**
- * Warehouse Store
- * Manages warehouse inventory items
- */
 export const useWarehouseStore = defineStore('warehouse', () => {
-    // State
     const items = ref<WarehouseItem[]>([]);
     const factoryItems = ref<WarehouseItem[]>([]);
     const currentItem = ref<WarehouseItem | null>(null);
@@ -19,7 +14,6 @@ export const useWarehouseStore = defineStore('warehouse', () => {
     const perPage = ref(10);
     const totalItems = ref(0);
 
-    // Getters
     const capsuleWarehouseItems = computed(() =>
         items.value.filter(item => item.location === 'Склад Капсула')
     );
@@ -34,7 +28,6 @@ export const useWarehouseStore = defineStore('warehouse', () => {
         items.value.filter(item => item.quantity < 10)
     );
 
-    // Actions
     async function fetchItems(params?: FilterParams) {
         loading.value = true;
         error.value = null;
@@ -51,7 +44,6 @@ export const useWarehouseStore = defineStore('warehouse', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to fetch warehouse items:', err);
         } finally {
             loading.value = false;
         }
@@ -69,7 +61,6 @@ export const useWarehouseStore = defineStore('warehouse', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to fetch factory warehouse items:', err);
         } finally {
             loading.value = false;
         }
@@ -88,7 +79,6 @@ export const useWarehouseStore = defineStore('warehouse', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to fetch warehouse item:', err);
         } finally {
             loading.value = false;
         }
@@ -107,7 +97,6 @@ export const useWarehouseStore = defineStore('warehouse', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to create warehouse item:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -130,7 +119,6 @@ export const useWarehouseStore = defineStore('warehouse', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to update warehouse item:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -149,7 +137,6 @@ export const useWarehouseStore = defineStore('warehouse', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to delete warehouse item:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -173,7 +160,6 @@ export const useWarehouseStore = defineStore('warehouse', () => {
     }
 
     return {
-        // State
         items,
         factoryItems,
         currentItem,
@@ -183,14 +169,10 @@ export const useWarehouseStore = defineStore('warehouse', () => {
         currentPage,
         perPage,
         totalItems,
-
-        // Getters
         capsuleWarehouseItems,
         cupWarehouseItems,
         totalItemsCount,
         lowStockItems,
-
-        // Actions
         fetchItems,
         fetchFactoryItems,
         fetchItemById,

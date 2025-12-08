@@ -1,9 +1,6 @@
 import { useUIStore } from '../stores/ui';
 import type { ToastType } from '../stores/ui';
 
-/**
- * Composable for showing toast notifications
- */
 export function useNotification() {
     const uiStore = useUIStore();
 

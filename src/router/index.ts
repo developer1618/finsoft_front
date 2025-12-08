@@ -1,7 +1,7 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
-import { getCurrentRole, type UserRole } from "../stores/auth";
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
+import { getCurrentRole, type UserRole } from '../stores/auth';
 
-declare module "vue-router" {
+declare module 'vue-router' {
   interface RouteMeta {
     roles?: UserRole[];
   }
@@ -9,99 +9,113 @@ declare module "vue-router" {
 
 const createSectionRoutes = (
   roles: UserRole[],
-  namePrefix: "Admin" | "Manager"
+  namePrefix: 'Admin' | 'Manager'
 ): RouteRecordRaw[] => [
     {
-      path: "capsule-workshop",
+      path: 'capsule-workshop',
       name: `${namePrefix}CapsuleWorkshop`,
-      component: () => import("../views/CapsuleWorkshopView.vue"),
+      component: () => import('../views/CapsuleWorkshopView.vue'),
       meta: { roles },
     },
     {
-      path: "chinese-cargo",
+      path: 'chinese-cargo',
       name: `${namePrefix}ChineseCargo`,
-      component: () => import("../views/ChineseCargoView.vue"),
+      component: () => import('../views/ChineseCargoView.vue'),
       meta: { roles },
     },
     {
-      path: "cup-workshop",
+      path: 'cup-workshop',
       name: `${namePrefix}CupWorkshop`,
-      component: () => import("../views/CupWorkshopView.vue"),
+      component: () => import('../views/CupWorkshopView.vue'),
       meta: { roles },
     },
     {
-      path: "income-expense",
+      path: 'income-expense',
       name: `${namePrefix}IncomeExpense`,
-      component: () => import("../views/IncomeExpenseView.vue"),
+      component: () => import('../views/IncomeExpenseView.vue'),
       meta: { roles },
     },
     {
-      path: "varzob-expense",
+      path: 'varzob-expense',
       name: `${namePrefix}VarzobExpense`,
-      component: () => import("../views/VarzobExpenseView.vue"),
+      component: () => import('../views/VarzobExpenseView.vue'),
       meta: { roles },
     },
     {
-      path: "profile",
+      path: 'profile',
       name: `${namePrefix}Profile`,
-      component: () => import("../views/ProfileView.vue"),
+      component: () => import('../views/ProfileView.vue'),
       meta: { roles },
     },
     {
-      path: "reports",
+      path: 'reports',
       name: `${namePrefix}ReportsPanel`,
-      component: () => import("../views/ReportsPanelView.vue"),
+      component: () => import('../views/ReportsPanelView.vue'),
       meta: { roles },
     },
     {
-      path: "settings",
+      path: 'settings',
       name: `${namePrefix}Settings`,
-      component: () => import("../views/SettingsView.vue"),
+      component: () => import('../views/SettingsView.vue'),
       meta: { roles },
     },
     {
-      path: "warehouse",
+      path: 'warehouse',
       name: `${namePrefix}Warehouse`,
-      component: () => import("../views/WarehouseView.vue"),
+      component: () => import('../views/WarehouseView.vue'),
       meta: { roles },
     },
     {
-      path: "factory-warehouse",
+      path: 'factory-warehouse',
       name: `${namePrefix}FactoryWarehouse`,
-      component: () => import("../views/FactoryWarehouseView.vue"),
+      component: () => import('../views/FactoryWarehouseView.vue'),
       meta: { roles },
     },
     {
-      path: "debts",
+      path: 'debts',
       name: `${namePrefix}Debts`,
-      component: () => import("../views/DebtsView.vue"),
+      component: () => import('../views/DebtsView.vue'),
       meta: { roles },
     },
   ];
 
 const routes: RouteRecordRaw[] = [
   {
-    path: "/",
-    redirect: "/login",
+    path: '/',
+    redirect: '/login',
   },
   {
-    path: "/login",
-    name: "Login",
-    component: () => import("../views/LoginView.vue"),
+    path: '/login',
+    name: 'Login',
+    component: () => import('../views/LoginView.vue'),
   },
   {
-    path: "/admin",
-    name: "AdminPanel",
-    component: () => import("../views/AdminPanelView.vue"),
-    meta: { roles: ["admin"] },
-    children: createSectionRoutes(["admin"], "Admin"),
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('../views/ForgotPasswordView.vue'),
   },
   {
-    path: "/manager",
-    name: "ManagerPanel",
-    component: () => import("../views/ManagerPanelView.vue"),
-    meta: { roles: ["manager"] },
-    children: createSectionRoutes(["manager"], "Manager"),
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('../views/ResetPasswordView.vue'),
+  },
+  {
+    path: '/admin',
+    name: 'AdminPanel',
+    component: () => import('../views/AdminPanelView.vue'),
+    meta: { roles: ['admin'] },
+    children: createSectionRoutes(['admin'], 'Admin'),
+  },
+  {
+    path: '/manager',
+    name: 'ManagerPanel',
+    component: () => import('../views/ManagerPanelView.vue'),
+    meta: { roles: ['manager'] },
+    children: createSectionRoutes(['manager'], 'Manager'),
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/login',
   },
 ];
 
@@ -111,23 +125,26 @@ const router = createRouter({
 });
 
 const getFallbackRoute = (role: UserRole | null) => {
-  if (role === "admin") {
-    return "/admin";
+  if (role === 'admin') {
+    return '/admin';
   }
-  if (role === "manager") {
-    return "/manager";
+  if (role === 'manager') {
+    return '/manager';
   }
-  return "/login";
+  return '/login';
 };
+
+const publicRoutes = ['/login', '/forgot-password', '/reset-password'];
 
 router.beforeEach((to, _from, next) => {
   const role = getCurrentRole();
+  const isPublicRoute = publicRoutes.some(route => to.path.startsWith(route));
 
-  if (to.path !== "/login" && !role) {
-    return next("/login");
+  if (!isPublicRoute && !role) {
+    return next('/login');
   }
 
-  if (to.path === "/login" && role) {
+  if (to.path === '/login' && role) {
     return next(getFallbackRoute(role));
   }
 

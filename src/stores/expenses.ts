@@ -3,12 +3,7 @@ import { ref, computed } from 'vue';
 import type { Transaction, VarzobExpense, FilterParams, ApiError } from '../types';
 import { expensesService } from '../services';
 
-/**
- * Expenses Store
- * Manages income and expense transactions
- */
 export const useExpensesStore = defineStore('expenses', () => {
-    // State
     const transactions = ref<Transaction[]>([]);
     const varzobExpenses = ref<VarzobExpense[]>([]);
     const currentTransaction = ref<Transaction | null>(null);
@@ -19,7 +14,6 @@ export const useExpensesStore = defineStore('expenses', () => {
     const perPage = ref(10);
     const totalItems = ref(0);
 
-    // Getters
     const incomeTransactions = computed(() =>
         transactions.value.filter(t => t.type === 'Доход')
     );
@@ -42,7 +36,6 @@ export const useExpensesStore = defineStore('expenses', () => {
         varzobExpenses.value.reduce((sum, e) => sum + e.amount, 0)
     );
 
-    // Actions
     async function fetchTransactions(params?: FilterParams) {
         loading.value = true;
         error.value = null;
@@ -59,7 +52,6 @@ export const useExpensesStore = defineStore('expenses', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to fetch transactions:', err);
         } finally {
             loading.value = false;
         }
@@ -77,7 +69,6 @@ export const useExpensesStore = defineStore('expenses', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to fetch Varzob expenses:', err);
         } finally {
             loading.value = false;
         }
@@ -96,7 +87,6 @@ export const useExpensesStore = defineStore('expenses', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to fetch transaction:', err);
         } finally {
             loading.value = false;
         }
@@ -115,7 +105,6 @@ export const useExpensesStore = defineStore('expenses', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to create transaction:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -138,7 +127,6 @@ export const useExpensesStore = defineStore('expenses', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to update transaction:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -157,7 +145,6 @@ export const useExpensesStore = defineStore('expenses', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to delete transaction:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -177,7 +164,6 @@ export const useExpensesStore = defineStore('expenses', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to create Varzob expense:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -200,7 +186,6 @@ export const useExpensesStore = defineStore('expenses', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to update Varzob expense:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -219,7 +204,6 @@ export const useExpensesStore = defineStore('expenses', () => {
             }
         } catch (err) {
             error.value = err as ApiError;
-            console.error('Failed to delete Varzob expense:', err);
             throw err;
         } finally {
             loading.value = false;
@@ -243,7 +227,6 @@ export const useExpensesStore = defineStore('expenses', () => {
     }
 
     return {
-        // State
         transactions,
         varzobExpenses,
         currentTransaction,
@@ -253,16 +236,12 @@ export const useExpensesStore = defineStore('expenses', () => {
         currentPage,
         perPage,
         totalItems,
-
-        // Getters
         incomeTransactions,
         expenseTransactions,
         totalIncome,
         totalExpense,
         netProfit,
         totalVarzobExpense,
-
-        // Actions
         fetchTransactions,
         fetchVarzobExpenses,
         fetchTransactionById,

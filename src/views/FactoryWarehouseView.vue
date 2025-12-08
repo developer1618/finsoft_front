@@ -12,79 +12,96 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed, onMounted } from "vue";
 import DataTable from "../components/DataTable.vue";
 import { getCurrentRole } from "../stores/auth";
+import { useWarehouseStore } from "../stores/warehouse";
+import { storeToRefs } from "pinia";
 
-const tableData = ref([
-  {
-    Дата: "2025-11-20",
-    "Название товара": "Полимерное сырье P-45",
-    Количество: "12 тонн",
-  },
-  {
-    Дата: "2025-11-19",
-    "Название товара": "Стальной штамп",
-    Количество: "3 шт",
-  },
-  {
-    Дата: "2025-11-18",
-    "Название товара": "Пищевые добавки",
-    Количество: "980 кг",
-  },
-  {
-    Дата: "2025-11-17",
-    "Название товара": "Гофрокороба",
-    Количество: "4 500 шт",
-  },
-  {
-    Дата: "2025-11-16",
-    "Название товара": "Тара для жидкостей",
-    Количество: "1 200 шт",
-  },
-  {
-    Дата: "2025-11-15",
-    "Название товара": "Ремкомплект пресса",
-    Количество: "5 комплектов",
-  },
-  {
-    Дата: "2025-11-14",
-    "Название товара": "Пищевой спирт",
-    Количество: "2 000 л",
-  },
-  {
-    Дата: "2025-11-13",
-    "Название товара": "Контейнеры евро-паллет",
-    Количество: "260 шт",
-  },
-  {
-    Дата: "2025-11-12",
-    "Название товара": "Этикетки экспорт",
-    Количество: "35 000 шт",
-  },
-  {
-    Дата: "2025-11-11",
-    "Название товара": "Алюминиевые крышки",
-    Количество: "18 000 шт",
-  },
-]);
+const warehouseStore = useWarehouseStore();
+const { factoryItems } = storeToRefs(warehouseStore);
+
+const tableData = computed(() => {
+  return factoryItems.value.map((item) => ({
+    id: item.id,
+    Дата: item.date,
+    "Название товара": item.name,
+    Количество: `${item.quantity} ${item.unit}`,
+    original: item,
+  }));
+});
 
 const isManagerView = computed(() => getCurrentRole() === "manager");
 
-const handleAdd = () => {
-  alert(
-    "Функция добавления: откроется форма для добавления нового товара на склад завода"
-  );
+onMounted(() => {
+  warehouseStore.fetchFactoryItems();
+});
+
+const parseQuantity = (value: string) => {
+  if (!value) return { quantity: 0, unit: 'шт' };
+  
+  const trimmed = value.trim();
+  const parts = trimmed.split(' ');
+  const firstPart = parts[0] ?? '0';
+  const quantity = parseFloat(firstPart.replace(',', '.')) || 0;
+  const unit = parts[1] || 'шт';
+  
+  return { quantity, unit };
 };
 
-const handleEdit = (row: Record<string, any>) => {
-  alert(`Редактирование: ${JSON.stringify(row)}`);
+const handleAdd = async (data: Record<string, any>) => {
+  try {
+    const { quantity, unit } = parseQuantity(data['Количество'] || '');
+    
+    if (!data['Дата'] || !data['Название товара']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await warehouseStore.createItem({
+      date: data['Дата'],
+      name: data['Название товара'],
+      quantity,
+      unit,
+      location: 'Склад Завод' as any
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при создании");
+  }
 };
 
-const handleDelete = (row: Record<string, any>) => {
-  const index = tableData.value.findIndex((item) => item === row);
-  if (index > -1) {
-    tableData.value.splice(index, 1);
+const handleEdit = async (data: Record<string, any>) => {
+  try {
+    const { quantity, unit } = parseQuantity(data['Количество'] || '');
+    const id = data.original?.id || data.id;
+    
+    if (!id) {
+      alert('Ошибка: ID записи не найден');
+      return;
+    }
+    
+    if (!data['Дата'] || !data['Название товара']) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+
+    await warehouseStore.updateItem(id, {
+      date: data['Дата'],
+      name: data['Название товара'],
+      quantity,
+      unit,
+      location: 'Склад Завод' as any
+    });
+  } catch (e: any) {
+    alert(e?.message || "Ошибка при обновлении");
+  }
+};
+
+const handleDelete = async (row: Record<string, any>) => {
+  try {
+    await warehouseStore.deleteItem(row.original.id);
+  } catch {
+    alert("Ошибка при удалении");
   }
 };
 </script>

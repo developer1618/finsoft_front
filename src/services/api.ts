@@ -1,15 +1,24 @@
-import axios, type { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import type { ApiResponse, ApiError } from '../types/api';
 
-/**
- * API Client Configuration
- */
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-const API_TIMEOUT = 30000; // 30 seconds
+const resolveApiBaseUrl = (): string => {
+    const envUrl = import.meta.env.VITE_API_BASE_URL;
+    if (envUrl) {
+        return envUrl;
+    }
 
-/**
- * Create axios instance with default configuration
- */
+    if (typeof window !== 'undefined') {
+        return `${window.location.origin}/api`;
+    }
+
+    return 'http://localhost:8000/api';
+};
+
+const API_BASE_URL = resolveApiBaseUrl();
+const API_TIMEOUT = 30000;
+const STORAGE_KEY = 'finsoft_auth_user';
+
 const apiClient: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
     timeout: API_TIMEOUT,
@@ -17,31 +26,31 @@ const apiClient: AxiosInstance = axios.create({
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     },
-    withCredentials: true, // For CSRF cookies
+    withCredentials: false,
 });
 
-/**
- * Request interceptor - Add authentication token
- */
 apiClient.interceptors.request.use(
     (config) => {
-        // Get token from localStorage
-        const authData = localStorage.getItem('finsoft_auth_user');
+        const authData = localStorage.getItem(STORAGE_KEY);
         if (authData) {
             try {
                 const user = JSON.parse(authData);
                 if (user.token) {
                     config.headers.Authorization = `Bearer ${user.token}`;
                 }
-            } catch (error) {
-                console.error('Failed to parse auth data:', error);
+            } catch {
+                localStorage.removeItem(STORAGE_KEY);
             }
         }
 
-        // Add CSRF token if available
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         if (csrfToken) {
             config.headers['X-CSRF-TOKEN'] = csrfToken;
+        }
+
+        const xsrfToken = document.querySelector('meta[name="xsrf-token"]')?.getAttribute('content');
+        if (xsrfToken) {
+            config.headers['X-XSRF-TOKEN'] = xsrfToken;
         }
 
         return config;
@@ -51,9 +60,6 @@ apiClient.interceptors.request.use(
     }
 );
 
-/**
- * Response interceptor - Handle errors globally
- */
 apiClient.interceptors.response.use(
     (response: AxiosResponse) => {
         return response;
@@ -61,13 +67,11 @@ apiClient.interceptors.response.use(
     async (error: AxiosError<ApiError>) => {
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
-        // Handle 401 Unauthorized - Token expired
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
             try {
-                // Try to refresh token
-                const authData = localStorage.getItem('finsoft_auth_user');
+                const authData = localStorage.getItem(STORAGE_KEY);
                 if (authData) {
                     const user = JSON.parse(authData);
                     if (user.refreshToken) {
@@ -77,151 +81,149 @@ apiClient.interceptors.response.use(
 
                         const { token } = response.data;
                         user.token = token;
-                        localStorage.setItem('finsoft_auth_user', JSON.stringify(user));
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
 
-                        // Retry original request with new token
                         if (originalRequest.headers) {
                             originalRequest.headers.Authorization = `Bearer ${token}`;
                         }
                         return apiClient(originalRequest);
                     }
                 }
-            } catch (refreshError) {
-                // Refresh failed, logout user
-                localStorage.removeItem('finsoft_auth_user');
+            } catch {
+                localStorage.removeItem(STORAGE_KEY);
                 window.location.href = '/login';
-                return Promise.reject(refreshError);
+                return Promise.reject(error);
             }
+
+            localStorage.removeItem(STORAGE_KEY);
+            window.location.href = '/login';
         }
 
-        // Handle 403 Forbidden
         if (error.response?.status === 403) {
-            console.error('Access forbidden:', error.response.data);
+            console.error('Доступ запрещён');
         }
 
-        // Handle 500 Server Error
-        if (error.response?.status === 500) {
-            console.error('Server error:', error.response.data);
-        }
-
-        // Handle network errors
-        if (!error.response) {
-            console.error('Network error:', error.message);
+        if (error.response?.status === 429) {
+            console.error('Слишком много запросов');
         }
 
         return Promise.reject(error);
     }
 );
 
-/**
- * Generic GET request
- */
+function normalizeApiResponse<T>(payload: unknown): ApiResponse<T> {
+    if (payload && typeof payload === 'object') {
+        const payloadObj = payload as Record<string, unknown>;
+
+        if ('success' in payloadObj && typeof payloadObj.success === 'boolean') {
+            return {
+                success: payloadObj.success,
+                data: payloadObj.data as T | undefined,
+                message: payloadObj.message as string | undefined,
+                errors: payloadObj.errors as Record<string, string[]> | undefined,
+            };
+        }
+
+        if ('data' in payloadObj) {
+            return {
+                success: true,
+                data: payloadObj.data as T,
+                message: payloadObj.message as string | undefined,
+                errors: payloadObj.errors as Record<string, string[]> | undefined,
+            };
+        }
+    }
+
+    return {
+        success: true,
+        data: payload as T,
+    };
+}
+
 export async function get<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     try {
-        const response = await apiClient.get<ApiResponse<T>>(url, config);
-        return response.data;
+        const response = await apiClient.get(url, config);
+        return normalizeApiResponse<T>(response.data);
     } catch (error) {
         throw handleApiError(error as AxiosError<ApiError>);
     }
 }
 
-/**
- * Generic POST request
- */
 export async function post<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
 ): Promise<ApiResponse<T>> {
     try {
-        const response = await apiClient.post<ApiResponse<T>>(url, data, config);
-        return response.data;
+        const response = await apiClient.post(url, data, config);
+        return normalizeApiResponse<T>(response.data);
     } catch (error) {
         throw handleApiError(error as AxiosError<ApiError>);
     }
 }
 
-/**
- * Generic PUT request
- */
 export async function put<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
 ): Promise<ApiResponse<T>> {
     try {
-        const response = await apiClient.put<ApiResponse<T>>(url, data, config);
-        return response.data;
+        const response = await apiClient.put(url, data, config);
+        return normalizeApiResponse<T>(response.data);
     } catch (error) {
         throw handleApiError(error as AxiosError<ApiError>);
     }
 }
 
-/**
- * Generic PATCH request
- */
 export async function patch<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
 ): Promise<ApiResponse<T>> {
     try {
-        const response = await apiClient.patch<ApiResponse<T>>(url, data, config);
-        return response.data;
+        const response = await apiClient.patch(url, data, config);
+        return normalizeApiResponse<T>(response.data);
     } catch (error) {
         throw handleApiError(error as AxiosError<ApiError>);
     }
 }
 
-/**
- * Generic DELETE request
- */
 export async function del<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     try {
-        const response = await apiClient.delete<ApiResponse<T>>(url, config);
-        return response.data;
+        const response = await apiClient.delete(url, config);
+        return normalizeApiResponse<T>(response.data);
     } catch (error) {
         throw handleApiError(error as AxiosError<ApiError>);
     }
 }
 
-/**
- * Handle API errors and format them consistently
- */
 function handleApiError(error: AxiosError<ApiError>): ApiError {
     if (error.response) {
-        // Server responded with error
         return {
-            message: error.response.data?.message || 'An error occurred',
+            message: error.response.data?.message || 'Произошла ошибка на сервере',
             statusCode: error.response.status,
             errors: error.response.data?.errors,
             timestamp: new Date().toISOString(),
         };
-    } else if (error.request) {
-        // Request made but no response
+    }
+
+    if (error.request) {
         return {
-            message: 'No response from server. Please check your connection.',
-            statusCode: 0,
-            timestamp: new Date().toISOString(),
-        };
-    } else {
-        // Error in request setup
-        return {
-            message: error.message || 'An unexpected error occurred',
+            message: 'Нет ответа от сервера. Проверьте подключение.',
             statusCode: 0,
             timestamp: new Date().toISOString(),
         };
     }
+
+    return {
+        message: error.message || 'Не удалось выполнить запрос',
+        statusCode: 0,
+        timestamp: new Date().toISOString(),
+    };
 }
 
-/**
- * Export the axios instance for advanced usage
- */
 export { apiClient };
 
-/**
- * Default export with all methods
- */
 export default {
     get,
     post,

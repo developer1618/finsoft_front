@@ -1,7 +1,3 @@
-/**
- * Central export point for all services
- */
-
 export * from './api';
 export * from './debts.service';
 export * from './warehouse.service';
