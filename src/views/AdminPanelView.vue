@@ -150,6 +150,7 @@
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Доход / Расход -->
                 <div
                   v-if="isSectionVisible('income-expense')"
                   @click="router.push('/admin/income-expense')"
@@ -173,26 +174,7 @@
                   </div>
                 </div>
 
-                <div
-                  v-if="isSectionVisible('chinese-cargo')"
-                  @click="router.push('/admin/chinese-cargo')"
-                  class="bg-linear-to-br from-orange-50 to-orange-100 rounded-lg shadow-md p-6 border-l-4 border-orange-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <p class="text-lg font-medium text-gray-600">
-                        Китайские грузы
-                      </p>
-                      <p class="text-2xl font-bold text-orange-600 mt-2">
-                        {{ cargoTotals }}
-                      </p>
-                    </div>
-                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
-                      <TruckIcon class="h-8 w-8 text-orange-600" />
-                    </div>
-                  </div>
-                </div>
-
+                <!-- Расход Варзоб -->
                 <div
                   v-if="isSectionVisible('varzob-expense')"
                   @click="router.push('/admin/varzob-expense')"
@@ -213,13 +195,35 @@
                   </div>
                 </div>
 
+                <!-- Китайские грузы -->
+                <div
+                  v-if="isSectionVisible('chinese-cargo')"
+                  @click="router.push('/admin/chinese-cargo')"
+                  class="bg-linear-to-br from-orange-50 to-orange-100 rounded-lg shadow-md p-6 border-l-4 border-orange-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
+                >
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <p class="text-lg font-medium text-gray-600">
+                        Китайские грузы
+                      </p>
+                      <p class="text-2xl font-bold text-orange-600 mt-2">
+                        {{ cargoTotals }}
+                      </p>
+                    </div>
+                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                      <TruckIcon class="h-8 w-8 text-orange-600" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Цех капсулы -->
                 <div
                   v-if="isSectionVisible('capsule-workshop')"
                   @click="router.push('/admin/capsule-workshop')"
                   class="bg-linear-to-br from-blue-50 to-blue-100 rounded-lg shadow-md p-6 border-l-4 border-blue-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   <div class="flex items-center justify-between">
-                    <div>
+                    <div class="flex-1">
                       <p class="text-lg font-medium text-gray-600">
                         Цех капсулы
                       </p>
@@ -233,13 +237,14 @@
                   </div>
                 </div>
 
+                <!-- Цех стакана -->
                 <div
                   v-if="isSectionVisible('cup-workshop')"
                   @click="router.push('/admin/cup-workshop')"
                   class="bg-linear-to-br from-purple-50 to-purple-100 rounded-lg shadow-md p-6 border-l-4 border-purple-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   <div class="flex items-center justify-between">
-                    <div>
+                    <div class="flex-1">
                       <p class="text-lg font-medium text-gray-600">
                         Цех стакана
                       </p>
@@ -253,24 +258,7 @@
                   </div>
                 </div>
 
-                <div
-                  v-if="isSectionVisible('warehouse')"
-                  @click="router.push('/admin/warehouse')"
-                  class="bg-linear-to-br from-teal-50 to-teal-100 rounded-lg shadow-md p-6 border-l-4 border-teal-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <p class="text-lg font-medium text-gray-600">Склад цех</p>
-                      <p class="text-2xl font-bold text-teal-600 mt-2">
-                        {{ warehouseTotals }}
-                      </p>
-                    </div>
-                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
-                      <BuildingStorefrontIcon class="h-8 w-8 text-teal-600" />
-                    </div>
-                  </div>
-                </div>
-
+                <!-- Склад завод -->
                 <div
                   v-if="isSectionVisible('factory-warehouse')"
                   @click="router.push('/admin/factory-warehouse')"
@@ -291,20 +279,59 @@
                   </div>
                 </div>
 
+                <!-- Долги -->
                 <div
                   v-if="isSectionVisible('debts')"
                   @click="router.push('/admin/debts')"
-                  class="bg-linear-to-br from-rose-50 to-rose-100 rounded-lg shadow-md p-6 border-l-4 border-rose-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  class="bg-linear-to-br from-red-50 to-red-100 rounded-lg shadow-md p-6 border-l-4 border-red-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   <div class="flex items-center justify-between">
-                    <div>
+                    <div class="flex-1">
                       <p class="text-lg font-medium text-gray-700">Долги</p>
-                      <p class="text-2xl font-bold text-rose-600 mt-2">
+                      <p class="text-2xl font-bold text-red-600 mt-2">
                         {{ debtsTotals }}
                       </p>
                     </div>
                     <div class="rounded-xl bg-white/70 p-3 shadow-sm">
-                      <DocumentCurrencyDollarIcon class="h-8 w-8 text-rose-600" />
+                      <DocumentCurrencyDollarIcon class="h-8 w-8 text-red-600" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Касса -->
+                <div
+                  v-if="isSectionVisible('cashier')"
+                  @click="router.push('/admin/cashier')"
+                  class="bg-linear-to-br from-amber-50 to-amber-100 rounded-lg shadow-md p-6 border-l-4 border-amber-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
+                >
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <p class="text-lg font-medium text-gray-700">Касса</p>
+                      <p class="text-2xl font-bold text-amber-600 mt-2">
+                        Управление
+                      </p>
+                    </div>
+                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                      <CalculatorIcon class="h-8 w-8 text-amber-600" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Товары -->
+                <div
+                  v-if="isSectionVisible('products')"
+                  @click="router.push('/admin/products')"
+                  class="bg-linear-to-br from-indigo-50 to-indigo-100 rounded-lg shadow-md p-6 border-l-4 border-indigo-500 cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-300"
+                >
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <p class="text-lg font-medium text-gray-700">Товары</p>
+                      <p class="text-2xl font-bold text-indigo-600 mt-2">
+                        Справочник
+                      </p>
+                    </div>
+                    <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                      <ShoppingBagIcon class="h-8 w-8 text-indigo-600" />
                     </div>
                   </div>
                 </div>
@@ -332,11 +359,12 @@ import {
   BanknotesIcon,
   Bars3Icon,
   BuildingOffice2Icon,
-  BuildingStorefrontIcon,
+  CalculatorIcon,
   Cog6ToothIcon,
   CubeIcon,
   DocumentCurrencyDollarIcon,
   HomeIcon,
+  ShoppingBagIcon,
   TruckIcon,
 } from "@heroicons/vue/24/outline";
 import logoUrl from "../assets/finsoft-logo.svg";
@@ -347,6 +375,7 @@ import { useExpensesStore } from "../stores/expenses";
 import { useDebtsStore } from "../stores/debts";
 import { useWarehouseStore } from "../stores/warehouse";
 import { useWorkshopsStore } from "../stores/workshops";
+import { useCashierStore } from "../stores/cashier";
 import { storeToRefs } from "pinia";
 
 const route = useRoute();
@@ -368,11 +397,13 @@ const expensesStore = useExpensesStore();
 const debtsStore = useDebtsStore();
 const warehouseStore = useWarehouseStore();
 const workshopsStore = useWorkshopsStore();
+const cashierStore = useCashierStore();
 
 const { transactions, varzobExpenses } = storeToRefs(expensesStore);
 const { debts } = storeToRefs(debtsStore);
-const { items: warehouseItems, factoryItems } = storeToRefs(warehouseStore);
+const { factoryItems } = storeToRefs(warehouseStore);
 const { cargoItems, capsuleItems, cupItems } = storeToRefs(workshopsStore);
+const { balanceSom, balanceDollar } = storeToRefs(cashierStore);
 
 const formatNum = (n: number) => n.toLocaleString('ru-RU');
 
@@ -429,11 +460,7 @@ const cupTotals = computed(() => {
   return `${formatNum(total)} шт`;
 });
 
-const warehouseTotals = computed(() => {
-  if (!warehouseItems.value.length) return 'Нет данных';
-  const total = warehouseItems.value.reduce((sum, i) => sum + i.quantity, 0);
-  return `${formatNum(total)} шт`;
-});
+
 
 const factoryTotals = computed(() => {
   if (!factoryItems.value.length) return 'Нет данных';
@@ -455,6 +482,13 @@ const debtsTotals = computed(() => {
     .filter(d => d.currency === '$')
     .reduce((sum, d) => sum + d.remainingAmount, 0);
   return `${formatNum(totalSom)} сом / ${formatNum(totalDollar)} $`;
+});
+
+const cashierTotals = computed(() => {
+  if (balanceSom.value === 0 && balanceDollar.value === 0) {
+    return 'Нет данных';
+  }
+  return `${formatNum(balanceSom.value)} сом / ${formatNum(balanceDollar.value)} $`;
 });
 
 const MENU_VISIBILITY_KEY = "finsoft_menu_visibility";
@@ -499,12 +533,7 @@ const navigationBase: NavItem[] = [
     href: "/admin/cup-workshop",
     icon: ArchiveBoxIcon,
   },
-  {
-    id: "warehouse",
-    name: "Склад цех",
-    href: "/admin/warehouse",
-    icon: BuildingStorefrontIcon,
-  },
+
   {
     id: "factory-warehouse",
     name: "Склад завод",
@@ -517,6 +546,18 @@ const navigationBase: NavItem[] = [
     href: "/admin/debts",
     icon: DocumentCurrencyDollarIcon,
   },
+  {
+    id: "cashier",
+    name: "Касса",
+    href: "/admin/cashier",
+    icon: CalculatorIcon,
+  },
+  {
+    id: "products",
+    name: "Товары",
+    href: "/admin/products",
+    icon: ShoppingBagIcon,
+  },
 ];
 
 const visibilityIds = [
@@ -526,9 +567,10 @@ const visibilityIds = [
   "chinese-cargo",
   "capsule-workshop",
   "cup-workshop",
-  "warehouse",
   "factory-warehouse",
   "debts",
+  "cashier",
+  "products",
 ];
 
 const defaultVisibility = visibilityIds.reduce<Record<string, boolean>>(
@@ -560,8 +602,8 @@ const loadVisibility = () => {
   try {
     const parsed = JSON.parse(stored) as Record<string, boolean>;
     menuVisibility.value = { ...defaultVisibility, ...parsed };
-  } catch (error) {
-    console.error("Не удалось прочитать настройки меню", error);
+  } catch {
+    // Не удалось прочитать настройки меню
   }
 };
 
@@ -598,6 +640,7 @@ onMounted(() => {
   workshopsStore.fetchCargo();
   workshopsStore.fetchCapsuleItems();
   workshopsStore.fetchCupItems();
+  cashierStore.fetchOperations();
 });
 
 onUnmounted(() => {

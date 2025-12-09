@@ -99,14 +99,6 @@ apiClient.interceptors.response.use(
             window.location.href = '/login';
         }
 
-        if (error.response?.status === 403) {
-            console.error('Доступ запрещён');
-        }
-
-        if (error.response?.status === 429) {
-            console.error('Слишком много запросов');
-        }
-
         return Promise.reject(error);
     }
 );

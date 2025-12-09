@@ -59,12 +59,7 @@ const createSectionRoutes = (
       component: () => import('../views/SettingsView.vue'),
       meta: { roles },
     },
-    {
-      path: 'warehouse',
-      name: `${namePrefix}Warehouse`,
-      component: () => import('../views/WarehouseView.vue'),
-      meta: { roles },
-    },
+
     {
       path: 'factory-warehouse',
       name: `${namePrefix}FactoryWarehouse`,
@@ -75,6 +70,18 @@ const createSectionRoutes = (
       path: 'debts',
       name: `${namePrefix}Debts`,
       component: () => import('../views/DebtsView.vue'),
+      meta: { roles },
+    },
+    {
+      path: 'cashier',
+      name: `${namePrefix}Cashier`,
+      component: () => import('../views/CashierView.vue'),
+      meta: { roles },
+    },
+    {
+      path: 'products',
+      name: `${namePrefix}Products`,
+      component: () => import('../views/ProductsView.vue'),
       meta: { roles },
     },
   ];

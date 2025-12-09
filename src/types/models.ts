@@ -107,6 +107,15 @@ export interface DashboardStats {
     cupProduction: number;
 }
 
+export interface CashierOperation extends BaseModel {
+    date: string;
+    type: 'Приход' | 'Расход';
+    amount: number;
+    currency: Currency;
+    description: string;
+    paymentMethod?: PaymentMethod;
+}
+
 export interface MenuVisibility {
     dashboard: boolean;
     'income-expense': boolean;
@@ -117,4 +126,6 @@ export interface MenuVisibility {
     warehouse: boolean;
     'factory-warehouse': boolean;
     debts: boolean;
+    cashier: boolean;
 }
+

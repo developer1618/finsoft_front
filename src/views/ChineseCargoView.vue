@@ -2,7 +2,7 @@
   <DataTable
     title="Китайские грузы"
     description="Управление китайскими грузами"
-    :headers="['Дата', 'Название груза', 'Вес (кг)', 'Статус']"
+    :headers="['Дата', 'Название груза', 'Количество', 'Статус']"
     :data="tableData"
     :is-manager-view="isManagerView"
     :status-options="statusOptions"
@@ -30,7 +30,7 @@ const tableData = computed(() => {
     id: item.id,
     Дата: item.date,
     "Название груза": item.name,
-    "Вес (кг)": `${item.weight} ${item.unit}`,
+    "Количество": `${item.weight} ${item.unit}`,
     Статус: item.status,
     original: item,
   }));
@@ -56,7 +56,7 @@ const parseWeight = (value: string) => {
 
 const handleAdd = async (data: Record<string, any>) => {
   try {
-    const { weight, unit } = parseWeight(data['Вес (кг)'] || '');
+    const { weight, unit } = parseWeight(data['Количество'] || '');
     
     if (!data['Дата'] || !data['Название груза']) {
       alert('Заполните все обязательные поля');
@@ -82,7 +82,7 @@ const handleAdd = async (data: Record<string, any>) => {
 
 const handleEdit = async (data: Record<string, any>) => {
   try {
-    const { weight, unit } = parseWeight(data['Вес (кг)'] || '');
+    const { weight, unit } = parseWeight(data['Количество'] || '');
     const id = data.original?.id || data.id;
     
     if (!id) {

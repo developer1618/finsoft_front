@@ -31,7 +31,7 @@
                 :model-value="form[header] || null"
                 @update:model-value="(v: any) => form[header] = v"
                 :config="dateConfig"
-                placeholder="Выберите дату"
+                placeholder="дд.мм.гггг"
                 class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
               />
 
@@ -67,6 +67,18 @@
                 <option value="">Выберите расположение</option>
                 <option value="Склад Капсула">Склад Капсула</option>
                 <option value="Склад Стакан">Склад Стакан</option>
+              </select>
+
+              <!-- Product name select (with dynamic options) -->
+              <select
+                v-else-if="header === 'Название продукта' && productOptionsList.length > 0"
+                v-model="form[header]"
+                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+              >
+                <option value="">Выберите продукт</option>
+                <option v-for="opt in productOptionsList" :key="opt" :value="opt">
+                  {{ opt }}
+                </option>
               </select>
 
               <!-- Amount with currency -->
@@ -107,6 +119,27 @@
                 </select>
               </div>
 
+              <!-- Amount in SOM -->
+              <input
+                v-else-if="header === 'Сумма в сом'"
+                v-model="form[header]"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Введите сумму в сом"
+                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+              />
+
+              <!-- Amount in USD -->
+              <input
+                v-else-if="header === 'Сумма в $'"
+                v-model="form[header]"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Введите сумму в $"
+                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+              />
               <!-- Default text input -->
               <input
                 v-else
@@ -153,11 +186,13 @@ interface Props {
   headers: string[];
   initialData?: Record<string, any>;
   statusOptions?: string[];
+  productOptions?: string[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   initialData: () => ({}),
-  statusOptions: () => ['Заказано в Китае', 'Принято в Душанбе']
+  statusOptions: () => ['Заказано в Китае', 'Принято в Душанбе'],
+  productOptions: () => []
 });
 
 const emit = defineEmits<{
@@ -180,12 +215,17 @@ const dateConfig = {
 // Status options
 const statusOptionsList = computed(() => props.statusOptions);
 
+// Product options
+const productOptionsList = computed(() => props.productOptions || []);
+
 // Form data
 const form = ref<Record<string, string>>({});
 const amountValue = ref('');
 const amountCurrency = ref('сом');
 const quantityValue = ref('');
 const quantityUnit = ref('шт');
+const weightValue = ref('');
+const weightUnit = ref('кг');
 
 // Initialize form with initial data when component mounts
 onMounted(() => {
@@ -233,6 +273,16 @@ function initFormWithData() {
       quantityUnit.value = (match[2]?.toLowerCase() as 'кг' | 'шт') || 'шт';
     }
   }
+  
+  // Parse weight field
+  if (props.initialData && props.initialData['Вес / Штук']) {
+    const weightStr = String(props.initialData['Вес / Штук']);
+    const match = weightStr.match(/^([\d.,]+)\s*(кг|шт)?$/i);
+    if (match && match[1]) {
+      weightValue.value = match[1];
+      weightUnit.value = (match[2]?.toLowerCase() as 'кг' | 'шт') || 'кг';
+    }
+  }
 }
 
 function handleClose() {
@@ -277,6 +327,11 @@ function handleSubmit() {
   // Handle quantity field
   if (props.headers.includes('Количество') && quantityValue.value) {
     payload['Количество'] = `${quantityValue.value} ${quantityUnit.value}`;
+  }
+
+  // Handle weight field
+  if (props.headers.includes('Вес / Штук') && weightValue.value) {
+    payload['Вес / Штук'] = `${weightValue.value} ${weightUnit.value}`;
   }
 
   emit('confirm', payload);

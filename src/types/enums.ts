@@ -35,4 +35,5 @@ export enum TransactionType {
 export enum WarehouseLocation {
     CAPSULE = 'Склад Капсула',
     CUP = 'Склад Стакан',
+    FACTORY = 'Склад Завод',
 }

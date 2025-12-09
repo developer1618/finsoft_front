@@ -56,22 +56,6 @@
               </div>
             </RouterLink>
 
-            <!-- Китайские грузы -->
-            <RouterLink
-              to="/manager/chinese-cargo"
-              class="flex items-center justify-between rounded-2xl border-l-4 px-4 py-4 shadow-md transition hover:shadow-lg hover:scale-[1.02] bg-linear-to-br from-orange-50 to-orange-100 border-orange-500"
-            >
-              <div class="flex-1">
-                <p class="text-sm font-medium text-gray-600">Китайские грузы</p>
-                <p class="mt-2 text-2xl font-semibold text-orange-600">
-                  {{ cargoTotals }}
-                </p>
-              </div>
-              <div class="rounded-xl bg-white/70 p-3 shadow-sm">
-                <TruckIcon class="h-8 w-8 text-orange-600" />
-              </div>
-            </RouterLink>
-
             <!-- Расход Варзоб -->
             <RouterLink
               to="/manager/varzob-expense"
@@ -88,12 +72,28 @@
               </div>
             </RouterLink>
 
+            <!-- Китайские грузы -->
+            <RouterLink
+              to="/manager/chinese-cargo"
+              class="flex items-center justify-between rounded-2xl border-l-4 px-4 py-4 shadow-md transition hover:shadow-lg hover:scale-[1.02] bg-linear-to-br from-orange-50 to-orange-100 border-orange-500"
+            >
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-600">Китайские грузы</p>
+                <p class="mt-2 text-2xl font-semibold text-orange-600">
+                  {{ cargoTotals }}
+                </p>
+              </div>
+              <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                <TruckIcon class="h-8 w-8 text-orange-600" />
+              </div>
+            </RouterLink>
+
             <!-- Цех капсулы -->
             <RouterLink
               to="/manager/capsule-workshop"
               class="flex items-center justify-between rounded-2xl border-l-4 px-4 py-4 shadow-md transition hover:shadow-lg hover:scale-[1.02] bg-linear-to-br from-blue-50 to-blue-100 border-blue-500"
             >
-              <div>
+              <div class="flex-1">
                 <p class="text-sm font-medium text-gray-600">Цех капсулы</p>
                 <p class="mt-2 text-2xl font-semibold text-blue-600">
                   {{ capsuleTotals }}
@@ -109,7 +109,7 @@
               to="/manager/cup-workshop"
               class="flex items-center justify-between rounded-2xl border-l-4 px-4 py-4 shadow-md transition hover:shadow-lg hover:scale-[1.02] bg-linear-to-br from-purple-50 to-purple-100 border-purple-500"
             >
-              <div>
+              <div class="flex-1">
                 <p class="text-sm font-medium text-gray-600">Цех стакана</p>
                 <p class="mt-2 text-2xl font-semibold text-purple-600">
                   {{ cupTotals }}
@@ -117,22 +117,6 @@
               </div>
               <div class="rounded-xl bg-white/70 p-3 shadow-sm">
                 <ArchiveBoxIcon class="h-8 w-8 text-purple-600" />
-              </div>
-            </RouterLink>
-
-            <!-- Склад цех -->
-            <RouterLink
-              to="/manager/warehouse"
-              class="flex items-center justify-between rounded-2xl border-l-4 px-4 py-4 shadow-md transition hover:shadow-lg hover:scale-[1.02] bg-linear-to-br from-teal-50 to-teal-100 border-teal-500"
-            >
-              <div class="flex-1">
-                <p class="text-sm font-medium text-gray-600">Склад цех</p>
-                <p class="mt-2 text-2xl font-semibold text-teal-600">
-                  {{ warehouseTotals }}
-                </p>
-              </div>
-              <div class="rounded-xl bg-white/70 p-3 shadow-sm">
-                <BuildingStorefrontIcon class="h-8 w-8 text-teal-600" />
               </div>
             </RouterLink>
 
@@ -155,16 +139,48 @@
             <!-- Долги -->
             <RouterLink
               to="/manager/debts"
-              class="flex items-center justify-between rounded-2xl border-l-4 px-4 py-4 shadow-md transition hover:shadow-lg hover:scale-[1.02] bg-linear-to-br from-rose-50 to-rose-100 border-rose-500"
+              class="flex items-center justify-between rounded-2xl border-l-4 px-4 py-4 shadow-md transition hover:shadow-lg hover:scale-[1.02] bg-linear-to-br from-red-50 to-red-100 border-red-500"
             >
-              <div>
+              <div class="flex-1">
                 <p class="text-sm font-medium text-gray-700">Долги</p>
-                <p class="mt-2 text-2xl font-semibold text-rose-600">
+                <p class="mt-2 text-2xl font-semibold text-red-600">
                   {{ debtsTotals }}
                 </p>
               </div>
               <div class="rounded-xl bg-white/70 p-3 shadow-sm">
-                <DocumentCurrencyDollarIcon class="h-8 w-8 text-rose-600" />
+                <DocumentCurrencyDollarIcon class="h-8 w-8 text-red-600" />
+              </div>
+            </RouterLink>
+
+            <!-- Касса -->
+            <RouterLink
+              to="/manager/cashier"
+              class="flex items-center justify-between rounded-2xl border-l-4 px-4 py-4 shadow-md transition hover:shadow-lg hover:scale-[1.02] bg-linear-to-br from-amber-50 to-amber-100 border-amber-500"
+            >
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-700">Касса</p>
+                <p class="mt-2 text-2xl font-semibold text-amber-600">
+                  Управление
+                </p>
+              </div>
+              <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                <CalculatorIcon class="h-8 w-8 text-amber-600" />
+              </div>
+            </RouterLink>
+
+            <!-- Товары -->
+            <RouterLink
+              to="/manager/products"
+              class="flex items-center justify-between rounded-2xl border-l-4 px-4 py-4 shadow-md transition hover:shadow-lg hover:scale-[1.02] bg-linear-to-br from-indigo-50 to-indigo-100 border-indigo-500"
+            >
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-700">Товары</p>
+                <p class="mt-2 text-2xl font-semibold text-indigo-600">
+                  Справочник
+                </p>
+              </div>
+              <div class="rounded-xl bg-white/70 p-3 shadow-sm">
+                <ShoppingBagIcon class="h-8 w-8 text-indigo-600" />
               </div>
             </RouterLink>
           </div>
@@ -191,9 +207,10 @@ import {
   ArrowTrendingDownIcon,
   BanknotesIcon,
   BuildingOffice2Icon,
-  BuildingStorefrontIcon,
+  CalculatorIcon,
   CubeIcon,
   DocumentCurrencyDollarIcon,
+  ShoppingBagIcon,
   TruckIcon,
 } from "@heroicons/vue/24/outline";
 
@@ -226,7 +243,7 @@ const workshopsStore = useWorkshopsStore();
 
 const { transactions, varzobExpenses } = storeToRefs(expensesStore);
 const { debts } = storeToRefs(debtsStore);
-const { items: warehouseItems, factoryItems } = storeToRefs(warehouseStore);
+const { factoryItems } = storeToRefs(warehouseStore);
 const { cargoItems, capsuleItems, cupItems } = storeToRefs(workshopsStore);
 
 const formatNum = (n: number) => n.toLocaleString('ru-RU');
@@ -284,11 +301,7 @@ const cupTotals = computed(() => {
   return `${formatNum(total)} шт`;
 });
 
-const warehouseTotals = computed(() => {
-  if (!warehouseItems.value.length) return 'Нет данных';
-  const total = warehouseItems.value.reduce((sum, i) => sum + i.quantity, 0);
-  return `${formatNum(total)} шт`;
-});
+
 
 const factoryTotals = computed(() => {
   if (!factoryItems.value.length) return 'Нет данных';

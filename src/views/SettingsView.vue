@@ -362,11 +362,7 @@ const menuOptions: MenuOption[] = [
     name: "Цех стакана",
     description: "Статистика по второму цеху",
   },
-  {
-    id: "warehouse",
-    name: "Склад цех",
-    description: "Остатки на складе цеха",
-  },
+
   {
     id: "factory-warehouse",
     name: "Склад завод",
@@ -376,6 +372,11 @@ const menuOptions: MenuOption[] = [
     id: "debts",
     name: "Долги",
     description: "Управление задолженностями клиентов",
+  },
+  {
+    id: "products",
+    name: "Товары",
+    description: "Справочник товаров и продукции",
   },
 ];
 
@@ -397,8 +398,8 @@ const loadVisibility = () => {
   try {
     const parsed = JSON.parse(stored) as Record<string, boolean>;
     menuVisibility.value = { ...defaultVisibility, ...parsed };
-  } catch (error) {
-    console.error("Не удалось прочитать настройки меню", error);
+  } catch {
+    // Не удалось прочитать настройки меню
   }
 };
 
@@ -444,12 +445,24 @@ const userForm = ref({
 const fetchUsers = async () => {
   usersLoading.value = true;
   try {
-    const response = await api.get<{ data: User[] }>('/users');
+    const response = await api.get<{ data: any[] }>('/users');
+    
     if (response.success && response.data) {
-      users.value = (response.data as any).data || response.data;
+      const rawUsers = (response.data as any).data || response.data;
+      
+      // Преобразуем snake_case поля из API в camelCase для UI
+      users.value = (Array.isArray(rawUsers) ? rawUsers : []).map((u: any) => ({
+        id: u.id,
+        username: u.username,
+        email: u.email,
+        firstName: u.first_name || u.firstName || '',
+        lastName: u.last_name || u.lastName || '',
+        role: u.role,
+        avatar: u.avatar,
+      }));
     }
   } catch (error) {
-    console.error('Failed to fetch users:', error);
+    // Ошибка загрузки пользователей
   } finally {
     usersLoading.value = false;
   }
@@ -511,7 +524,6 @@ const saveUser = async () => {
     await fetchUsers();
     closeUserModal();
   } catch (error: any) {
-    console.error('Failed to save user:', error);
     alert(error?.message || 'Ошибка при сохранении пользователя');
   } finally {
     userSaving.value = false;
@@ -533,7 +545,6 @@ const deleteUser = async () => {
     showDeleteModal.value = false;
     userToDelete.value = null;
   } catch (error: any) {
-    console.error('Failed to delete user:', error);
     alert(error?.message || 'Ошибка при удалении пользователя');
   } finally {
     userDeleting.value = false;

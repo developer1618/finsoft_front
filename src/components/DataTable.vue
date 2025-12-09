@@ -82,10 +82,8 @@
             >
               <FlatPickr
                 v-if="header === 'Дата'"
-                :model-value="columnFilters[header] || ''"
-                @update:model-value="(value) => updateDateFilter(header, value)"
-                @input="handleDateFilterMask"
-                :config="dateFilterConfig"
+                :model-value="null"
+                :config="dateRangeFilterConfig"
                 placeholder="дд.мм.гггг"
                 class="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
               />
@@ -303,6 +301,7 @@
       :headers="addFormHeaders"
       :status-options="normalizedStatusOptions"
       :default-status="defaultStatus"
+      :product-options="productOptions"
       @close="showAddModal = false"
       @confirm="handleAddConfirm"
     />
@@ -314,6 +313,7 @@
       :headers="headers"
       :initialData="selectedRow || {}"
       :status-options="normalizedStatusOptions"
+      :product-options="productOptions"
       @close="showEditModal = false"
       @confirm="handleEditConfirm"
     />
@@ -338,8 +338,6 @@ import {
 import Flatpickr from "vue-flatpickr-component";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
 import {
-  applyDateMask,
-  displayToIsoDate,
   isoToDisplayDate,
   normalizeToIsoDate,
 } from "../utils/dateFormat";
@@ -360,6 +358,7 @@ interface Props {
   defaultStatus?: string;
   partialPaymentEnabled?: boolean;
   rowClickable?: boolean;
+  productOptions?: string[];
 }
 
 const defaultStatusOptions = [
@@ -394,11 +393,30 @@ const emit = defineEmits<{
 
 const FlatPickr = Flatpickr;
 const today = new Date();
-const dateFilterConfig = {
+
+// Диапазон дат для фильтра
+const dateRangeStart = ref<Date | null>(null);
+const dateRangeEnd = ref<Date | null>(null);
+
+const dateRangeFilterConfig = {
+  mode: 'range' as const,
   dateFormat: "d.m.Y",
   locale: Russian,
-  allowInput: true,
+  allowInput: false,
   maxDate: today,
+  onChange: (selectedDates: Date[]) => {
+    if (selectedDates.length === 0) {
+      dateRangeStart.value = null;
+      dateRangeEnd.value = null;
+    } else if (selectedDates.length === 1) {
+      dateRangeStart.value = selectedDates[0] ?? null;
+      dateRangeEnd.value = selectedDates[0] ?? null;
+    } else {
+      dateRangeStart.value = selectedDates[0] ?? null;
+      dateRangeEnd.value = selectedDates[1] ?? null;
+    }
+    currentPage.value = 1;
+  },
 };
 
 const currentPage = ref(1);
@@ -540,25 +558,6 @@ const formatDatePickerValue = (
   return value;
 };
 
-const updateDateFilter = (
-  header: string,
-  value: string | Date | (string | Date)[] | undefined
-) => {
-  columnFilters.value[header] = formatDatePickerValue(value);
-  currentPage.value = 1;
-};
-
-const handleDateFilterMask = (event: InputEvent, header: string) => {
-  const target = event.target as HTMLInputElement | null;
-  if (!target) {
-    return;
-  }
-
-  const maskedValue = applyDateMask(target.value);
-  target.value = maskedValue;
-  columnFilters.value[header] = maskedValue;
-};
-
 // Модальные окна
 const showAddModal = ref(false);
 const showEditModal = ref(false);
@@ -580,25 +579,35 @@ const filteredData = computed(() => {
 
   // Фильтры по столбцам
   Object.entries(columnFilters.value).forEach(([header, filterValue]) => {
-    if (filterValue) {
-      if (header === "Дата") {
-        const targetIso = displayToIsoDate(filterValue);
-        if (targetIso) {
-          result = result.filter((row) => {
-            const rowDate = normalizeToIsoDate(String(row[header] ?? ""));
-            return rowDate === targetIso;
-          });
-        }
-      } else {
-        const query = filterValue.toLowerCase();
-        result = result.filter((row) =>
-          String(row[header] ?? "")
-            .toLowerCase()
-            .includes(query)
-        );
-      }
+    if (filterValue && header !== 'Дата') {
+      const query = filterValue.toLowerCase();
+      result = result.filter((row) =>
+        String(row[header] ?? "")
+          .toLowerCase()
+          .includes(query)
+      );
     }
   });
+
+  // Фильтр по диапазону дат
+  if (dateRangeStart.value) {
+    result = result.filter((row) => {
+      const dateStr = row['Дата'];
+      if (!dateStr) return false;
+      
+      const rowDate = new Date(normalizeToIsoDate(String(dateStr)) || '');
+      if (isNaN(rowDate.getTime())) return false;
+      
+      // Сбрасываем время для корректного сравнения
+      rowDate.setHours(0, 0, 0, 0);
+      const start = new Date(dateRangeStart.value!);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(dateRangeEnd.value || dateRangeStart.value!);
+      end.setHours(23, 59, 59, 999);
+      
+      return rowDate >= start && rowDate <= end;
+    });
+  }
 
   // Фильтр по статусу
   if (selectedFilter.value) {
@@ -698,6 +707,8 @@ const resetColumnFilters = () => {
   Object.keys(columnFilters.value).forEach((key) => {
     columnFilters.value[key] = "";
   });
+  dateRangeStart.value = null;
+  dateRangeEnd.value = null;
 };
 
 const exportToWord = () => {

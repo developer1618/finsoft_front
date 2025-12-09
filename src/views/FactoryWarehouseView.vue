@@ -17,6 +17,7 @@ import DataTable from "../components/DataTable.vue";
 import { getCurrentRole } from "../stores/auth";
 import { useWarehouseStore } from "../stores/warehouse";
 import { storeToRefs } from "pinia";
+import { WarehouseLocation } from "../types";
 
 const warehouseStore = useWarehouseStore();
 const { factoryItems } = storeToRefs(warehouseStore);
@@ -63,7 +64,7 @@ const handleAdd = async (data: Record<string, any>) => {
       name: data['Название товара'],
       quantity,
       unit,
-      location: 'Склад Завод' as any
+      location: WarehouseLocation.FACTORY
     });
   } catch (e: any) {
     alert(e?.message || "Ошибка при создании");
@@ -90,7 +91,7 @@ const handleEdit = async (data: Record<string, any>) => {
       name: data['Название товара'],
       quantity,
       unit,
-      location: 'Склад Завод' as any
+      location: WarehouseLocation.FACTORY
     });
   } catch (e: any) {
     alert(e?.message || "Ошибка при обновлении");

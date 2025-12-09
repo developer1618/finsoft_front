@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { WarehouseItem, FilterParams, ApiError } from '../types';
+import { WarehouseLocation } from '../types';
 import { warehouseService } from '../services';
 
 export const useWarehouseStore = defineStore('warehouse', () => {
@@ -93,6 +94,10 @@ export const useWarehouseStore = defineStore('warehouse', () => {
 
             if (response.success && response.data) {
                 items.value.unshift(response.data);
+                // Also add to factoryItems if it's a factory warehouse item
+                if (response.data.location === WarehouseLocation.FACTORY) {
+                    factoryItems.value.unshift(response.data);
+                }
                 return response.data;
             }
         } catch (err) {
@@ -115,6 +120,11 @@ export const useWarehouseStore = defineStore('warehouse', () => {
                 if (index !== -1) {
                     items.value[index] = response.data;
                 }
+                // Also update in factoryItems if it's a factory warehouse item
+                const factoryIndex = factoryItems.value.findIndex(item => item.id === id);
+                if (factoryIndex !== -1) {
+                    factoryItems.value[factoryIndex] = response.data;
+                }
                 return response.data;
             }
         } catch (err) {
@@ -134,6 +144,8 @@ export const useWarehouseStore = defineStore('warehouse', () => {
 
             if (response.success) {
                 items.value = items.value.filter(item => item.id !== id);
+                // Also remove from factoryItems
+                factoryItems.value = factoryItems.value.filter(item => item.id !== id);
             }
         } catch (err) {
             error.value = err as ApiError;

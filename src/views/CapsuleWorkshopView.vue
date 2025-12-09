@@ -5,6 +5,7 @@
     :headers="['Дата', 'Название продукта', 'Количество']"
     :data="tableData"
     :is-manager-view="isManagerView"
+    :product-options="['23 грамм', '28 грамм', '32 грамм']"
     @add="handleAdd"
     @edit="handleEdit"
     @delete="handleDelete"
